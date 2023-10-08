@@ -1,5 +1,6 @@
 defmodule Core.E621Client.API do
   @moduledoc false
+  @behaviour Core.E621Client
 
   use Tesla
 
@@ -20,10 +21,11 @@ defmodule Core.E621Client.API do
     with {:ok, result} <- get(url),
          posts <- result.body["posts"] do
       Logger.debug(inspect(posts, pretty: true))
-
-      posts
+      {:ok, posts}
     else
-      error -> error
+      error ->
+        Logger.error(error)
+        error
     end
   end
 end
