@@ -18,13 +18,12 @@ defmodule Core.E621ClientTest do
       Expectations.expect_get_random_posts()
 
       assert post_infos = E621Client.get_random_posts()
-
       assert length(post_infos) == 5
 
-      for {image, id, tags} <- post_infos do
-        assert image == "image_link.png"
-        assert id == 4_298_651
-        assert tags == @expected_tags
+      for post_info <- post_infos do
+        assert post_info.image == "image_link.png"
+        assert post_info.source == "https://e621.net/posts/4298651"
+        assert post_info.tags == @expected_tags
       end
     end
   end

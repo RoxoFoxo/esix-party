@@ -14,10 +14,10 @@ defmodule Core.E621Client do
   defp get_post_info(post) do
     tags = remove_bad_tags(post["tags"])
 
-    {
-      post["file"]["url"],
-      post["id"],
-      tags
+    %{
+      image: post["file"]["url"],
+      source: "https://e621.net/posts/#{post["id"]}",
+      tags: tags
     }
   end
 
