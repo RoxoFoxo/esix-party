@@ -18,6 +18,8 @@ defmodule CoreWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live "/game", GameLive, :index
   end
 
   # Other scopes may use custom stacks.
