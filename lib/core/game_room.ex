@@ -1,4 +1,5 @@
 defmodule Core.GameRoom do
+  @moduledoc false
   use GenServer
 
   alias Core.RoomRegistry

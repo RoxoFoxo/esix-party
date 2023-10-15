@@ -1,4 +1,6 @@
 defmodule Core.RoomRegistry do
+  @moduledoc false
+
   def child_spec(opts) do
     %{
       id: __MODULE__,

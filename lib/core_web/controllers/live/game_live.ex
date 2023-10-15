@@ -10,9 +10,9 @@ defmodule CoreWeb.GameLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: IO.puts("connected lol")
+    # if connected?(socket), do: IO.puts("connected lol")
 
     {:ok, assign(socket, :page, "lol")}
-    |> IO.inspect()
+    # |> IO.inspect()
   end
 end
