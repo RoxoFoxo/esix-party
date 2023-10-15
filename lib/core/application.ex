@@ -17,9 +17,11 @@ defmodule Core.Application do
       # Start Finch
       {Finch, name: Core.Finch},
       # Start the Endpoint (http/https)
-      CoreWeb.Endpoint
-      # Start a worker by calling: Core.Worker.start_link(arg)
-      # {Core.Worker, arg}
+      CoreWeb.Endpoint,
+      # Room Dynamic Supervisor
+      {DynamicSupervisor, strategy: :one_for_one, name: Core.RoomSupervisor},
+      # Starts registry
+      Core.RoomRegistry
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
