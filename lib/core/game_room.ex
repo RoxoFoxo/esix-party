@@ -2,15 +2,19 @@ defmodule Core.GameRoom do
   @moduledoc false
   use GenServer
 
+  defstruct players: %{}
+
   alias Core.RoomRegistry
 
   def new do
-    DynamicSupervisor.start_child(Core.RoomSupervisor, {__MODULE__, name: generate_new_name()})
+    DynamicSupervisor.start_child(
+      Core.RoomSupervisor,
+      {__MODULE__, name: generate_new_name()}
+    )
   end
 
-  def start_link(name: name) do
-    # put name here inside the state later ig
-    GenServer.start_link(__MODULE__, %{}, name: name)
+  def start_link(name: {_, _, {_, name}} = registry_name) do
+    GenServer.start_link(__MODULE__, %{name: name}, name: registry_name)
   end
 
   defp generate_new_name do
@@ -31,8 +35,8 @@ defmodule Core.GameRoom do
     {:ok, stack}
   end
 
-  # @impl true
-  # def handle_call(_request, _from, state) do
-  #   {:reply, state, state}
-  # end
+  @impl true
+  def handle_call(:get_name, _from, state) do
+    {:reply, state.name, state}
+  end
 end

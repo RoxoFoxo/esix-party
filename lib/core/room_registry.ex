@@ -11,11 +11,7 @@ defmodule Core.RoomRegistry do
     }
   end
 
-  def start_link(_opts) do
-    Registry.start_link(keys: :unique, name: __MODULE__)
-  end
+  def start_link(_opts), do: Registry.start_link(keys: :unique, name: __MODULE__)
 
-  def exists?(name) do
-    Registry.lookup(__MODULE__, name) !== []
-  end
+  def exists?(name), do: Registry.lookup(__MODULE__, name) !== []
 end

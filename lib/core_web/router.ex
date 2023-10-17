@@ -16,10 +16,9 @@ defmodule CoreWeb.Router do
 
   scope "/", CoreWeb do
     pipe_through :browser
-
-    get "/", PageController, :home
-
-    live "/game", GameLive, :index
+    
+    live "/", HomeLive, :home
+    live "/room/:name", RoomLive, :room
   end
 
   # Other scopes may use custom stacks.
