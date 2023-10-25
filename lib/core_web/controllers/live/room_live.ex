@@ -13,17 +13,19 @@ defmodule CoreWeb.RoomLive do
       <%= player.name %>
     <% end %>
 
-    <.modal id="hi" show>
-      <p>Please input your name:</p>
-      <.simple_form for={@form} id="name-input" phx-change="validate" phx-submit="name-input">
-        <:actions>
-          <.input phx-remove="name-input" field={@form[:name]} type="text" label="Username" />
-        </:actions>
-      </.simple_form>
-      <%= if @name_in_use? do %>
-        Name is already in use!
-      <% end %>
-    </.modal>
+    <%= if @current_player == nil do %>
+      <.modal id="hi" show>
+        <p>Please input your name:</p>
+        <.simple_form for={@form} id="name-input" phx-change="validate" phx-submit="name-input">
+          <:actions>
+            <.input phx-remove="name-input" field={@form[:name]} type="text" label="Username" />
+          </:actions>
+        </.simple_form>
+        <%= if @name_in_use? do %>
+          Name is already in use!
+        <% end %>
+      </.modal>
+    <% end %>
     """
   end
 
@@ -40,6 +42,7 @@ defmodule CoreWeb.RoomLive do
        |> assign(%{
          server_pid: server_pid,
          state: GenServer.call(server_pid, :get_state),
+         current_player: nil,
          name_in_use?: false,
          form: to_form(%{})
        })}
@@ -54,30 +57,30 @@ defmodule CoreWeb.RoomLive do
 
   @impl true
   def handle_event("validate", %{"name" => player_name}, socket) do
-    {:noreply, assign(socket, :name_in_use?, name_in_use?(player_name, get_player_list(socket)))}
+    {:noreply, assign(socket, :name_in_use?, name_in_use?(player_name, get_players(socket)))}
   end
 
   # create a block for "" names
-  def handle_event("name-input", %{"name" => name}, socket) do
-    players = get_player_list(socket)
+  def handle_event("name-input", %{"name" => player_name}, socket) do
+    players = get_players(socket)
 
-    if name_in_use?(name, players) do
+    if name_in_use?(player_name, players) do
       {:noreply, assign(socket, :name_in_use?, true)}
     else
       owner? = players == []
 
-      new_player_list = [%Player{name: name, owner?: owner?} | players]
+      new_player_list = [%Player{name: player_name, owner?: owner?} | players]
 
       new_state =
         GenServer.call(socket.assigns.server_pid, {:update_player_list, new_player_list})
 
-      {:noreply, assign(socket, :state, new_state)}
+      {:noreply, assign(socket, %{state: new_state, current_player: player_name})}
     end
   end
 
   defp get_server_pid(name), do: GenServer.whereis({:via, Registry, {RoomRegistry, name}})
 
-  defp get_player_list(socket), do: socket.assigns.state.players
+  defp get_players(socket), do: socket.assigns.state.players
 
   defp name_in_use?(player_name, players), do: Enum.any?(players, &(&1.name == player_name))
 end
