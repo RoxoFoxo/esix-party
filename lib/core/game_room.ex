@@ -2,7 +2,8 @@ defmodule Core.GameRoom do
   @moduledoc false
   use GenServer
 
-  defstruct players: %{}
+  @enforce_keys [:name]
+  defstruct [:name, players: []]
 
   alias Core.RoomRegistry
 
@@ -14,7 +15,7 @@ defmodule Core.GameRoom do
   end
 
   def start_link(name: {_, _, {_, name}} = registry_name) do
-    GenServer.start_link(__MODULE__, %{name: name}, name: registry_name)
+    GenServer.start_link(__MODULE__, %Core.GameRoom{name: name}, name: registry_name)
   end
 
   defp generate_new_name do
@@ -31,12 +32,22 @@ defmodule Core.GameRoom do
   end
 
   @impl true
-  def init(stack) do
-    {:ok, stack}
+  def init(state) do
+    {:ok, state}
   end
 
   @impl true
   def handle_call(:get_name, _from, state) do
     {:reply, state.name, state}
+  end
+
+  def handle_call({:update_player_list, new_player_list}, _from, state) do
+    new_state = Map.put(state, :players, new_player_list)
+
+    {:reply, new_state, new_state}
+  end
+
+  def handle_call(_request, _from, state) do
+    {:reply, state, state}
   end
 end

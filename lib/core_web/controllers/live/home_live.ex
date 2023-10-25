@@ -2,37 +2,60 @@ defmodule CoreWeb.HomeLive do
   use CoreWeb, :live_view
 
   alias Core.GameRoom
+  # alias Core.Player
 
   @impl true
   def render(assigns) do
     ~H"""
     <div>
-      <button phx-click="new_room">NEW ROOM</button>
+      <.simple_form for={@form} id="join-room" phx-submit="join_room">
+        <.input field={@form[:room_name]} type="text" label="Room Name" />
+        <:actions>
+          <.button>Join</.button>
+        </:actions>
+      </.simple_form>
+    </div>
 
+    <div>
+      <.button phx-click="new_room">NEW ROOM</.button>
     </div>
     """
 
-    # <%= for post <- @posts do %>
-    #   <img src={post.image} style="width:200px" />
-    #   <a href={post.source} class="button">Image source</a>
+    # <%= for post <- Core.E621Client.get_random_posts() do %>
+    # <img src={post.image} style="width:200px" />
+    # <a href={post.source} class="button">Image source</a>
     # <% end %>
-  end
-
-  def new_room do
-    {:ok, pid} = GameRoom.new()
-
-    GenServer.call(pid, :get_name)
-    |> then(&("/room/" <> &1))
   end
 
   @impl true
   def mount(_params, _session, socket) do
     # {:ok, assign(socket, :posts, Core.E621Client.get_random_posts())}
-    {:ok, socket}
+
+    {:ok,
+     socket
+     |> assign_form()}
   end
 
   @impl true
   def handle_event("new_room", _unsigned_params, socket) do
-    {:noreply, redirect(socket, to: new_room())}
+    room_name = new_room()
+
+    {:noreply, redirect(socket, to: "/room/" <> room_name)}
+  end
+
+  def handle_event("join_room", %{"room_name" => room_name}, socket) do
+    room_name = String.upcase(room_name)
+
+    {:noreply, redirect(socket, to: "/room/" <> room_name)}
+  end
+
+  defp new_room do
+    {:ok, pid} = GameRoom.new()
+
+    GenServer.call(pid, :get_name)
+  end
+
+  defp assign_form(socket) do
+    assign(socket, :form, to_form(%{}))
   end
 end
