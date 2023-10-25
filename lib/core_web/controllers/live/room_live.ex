@@ -35,6 +35,8 @@ defmodule CoreWeb.RoomLive do
     # if connected?(socket), do: IO.puts("connected lol")
 
     if RoomRegistry.exists?(name) do
+      Phoenix.PubSub.subscribe(Core.PubSub, name)
+
       server_pid = get_server_pid(name)
 
       {:ok,
@@ -72,10 +74,30 @@ defmodule CoreWeb.RoomLive do
       new_player_list = [%Player{name: player_name, owner?: owner?} | players]
 
       new_state =
-        GenServer.call(socket.assigns.server_pid, {:update_player_list, new_player_list})
+        GenServer.call(
+          socket.assigns.server_pid,
+          {:update_player_list, socket.assigns.state.name, new_player_list}
+        )
 
       {:noreply, assign(socket, %{state: new_state, current_player: player_name})}
     end
+  end
+
+  @impl true
+  def handle_info({:new_state, new_state}, socket) do
+    {:noreply, assign(socket, :state, new_state)}
+  end
+
+  @impl true
+  def terminate(_reason, socket) do
+    new_player_list =
+      get_players(socket)
+      |> Enum.reject(&(&1.name == socket.assigns.current_player))
+
+    GenServer.call(
+      socket.assigns.server_pid,
+      {:update_player_list, socket.assigns.state.name, new_player_list}
+    )
   end
 
   defp get_server_pid(name), do: GenServer.whereis({:via, Registry, {RoomRegistry, name}})

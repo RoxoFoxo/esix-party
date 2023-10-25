@@ -41,13 +41,18 @@ defmodule Core.GameRoom do
     {:reply, state.name, state}
   end
 
-  def handle_call({:update_player_list, new_player_list}, _from, state) do
+  def handle_call({:update_player_list, room_name, new_player_list}, from, state) do
     new_state = Map.put(state, :players, new_player_list)
 
+    broadcast({:new_state, new_state}, room_name)
     {:reply, new_state, new_state}
   end
 
   def handle_call(_request, _from, state) do
     {:reply, state, state}
+  end
+
+  defp broadcast(msg, name) do
+    Phoenix.PubSub.broadcast(Core.PubSub, name, msg)
   end
 end
