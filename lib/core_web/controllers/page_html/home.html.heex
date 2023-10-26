@@ -1,8 +1,0 @@
-<div>
-  <button phx-click={CoreWeb.PageController.new_room}>NEW ROOM</button>
-
-  <%= for post <- @posts do %>
-    <img src={post.image} style="width:200px" />
-    <a href={post.source} class="button">Image source</a>
-  <% end %>
-</div>

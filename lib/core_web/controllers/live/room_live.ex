@@ -30,11 +30,11 @@ defmodule CoreWeb.RoomLive do
   end
 
   @impl true
-  def mount(%{"name" => name}, _session, socket) do
-    if RoomRegistry.exists?(name) do
-      Phoenix.PubSub.subscribe(Core.PubSub, name)
+  def mount(%{"name" => room_name}, _session, socket) do
+    if RoomRegistry.exists?(room_name) do
+      Phoenix.PubSub.subscribe(Core.PubSub, room_name)
 
-      server_pid = get_server_pid(name)
+      server_pid = get_server_pid(room_name)
 
       {:ok,
        socket
@@ -43,12 +43,12 @@ defmodule CoreWeb.RoomLive do
          state: GenServer.call(server_pid, :get_state),
          current_player: nil,
          name_in_use?: false,
-         form: to_form(%{})
+         form: to_form(%{}),
        })}
     else
       {:ok,
        socket
-       |> put_flash(:error, "Room with code #{name} doesn't exist.")
+       |> put_flash(:error, "Room with name #{room_name} doesn't exist.")
        |> redirect(to: "/")}
     end
     |> IO.inspect()
