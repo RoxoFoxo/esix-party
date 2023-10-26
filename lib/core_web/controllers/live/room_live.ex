@@ -9,8 +9,8 @@ defmodule CoreWeb.RoomLive do
     ~H"""
     <p>Room name: <%= @state.name %></p>
     <p>Players:</p>
-    <%= for player <- @state.players do %>
-      <%= player.name %>
+    <%= for player <- Enum.reverse(@state.players) do %>
+      <%= player.name %> <br />
     <% end %>
 
     <%= if @current_player == nil do %>
@@ -31,9 +31,6 @@ defmodule CoreWeb.RoomLive do
 
   @impl true
   def mount(%{"name" => name}, _session, socket) do
-    # later I'll use this line for broadcasts
-    # if connected?(socket), do: IO.puts("connected lol")
-
     if RoomRegistry.exists?(name) do
       Phoenix.PubSub.subscribe(Core.PubSub, name)
 
@@ -62,7 +59,6 @@ defmodule CoreWeb.RoomLive do
     {:noreply, assign(socket, :name_in_use?, name_in_use?(player_name, get_players(socket)))}
   end
 
-  # create a block for "" names
   def handle_event("name-input", %{"name" => player_name}, socket) do
     players = get_players(socket)
 
