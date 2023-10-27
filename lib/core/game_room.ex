@@ -3,7 +3,7 @@ defmodule Core.GameRoom do
   use GenServer
 
   @enforce_keys [:name]
-  defstruct [:name, players: []]
+  defstruct [:name, players: [], status: "lobby"]
 
   alias Core.RoomRegistry
 
@@ -37,19 +37,18 @@ defmodule Core.GameRoom do
   end
 
   @impl true
+  def handle_call(:get_state, _from, state), do: {:reply, state, state}
+
   def handle_call(:get_name, _from, state) do
     {:reply, state.name, state}
   end
 
-  def handle_call({:update_player_list, room_name, new_player_list}, _from, state) do
-    new_state = Map.put(state, :players, new_player_list)
+  def handle_call({:update_state, room_name, changes}, _from, state) do
+    # new_state = Map.put(state, :players, new_player_list)
+    new_state = Map.merge(state, changes)
 
     broadcast({:new_state, new_state}, room_name)
     {:reply, new_state, new_state}
-  end
-
-  def handle_call(_request, _from, state) do
-    {:reply, state, state}
   end
 
   defp broadcast(msg, name) do
