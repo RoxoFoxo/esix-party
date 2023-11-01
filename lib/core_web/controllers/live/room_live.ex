@@ -1,6 +1,7 @@
 defmodule CoreWeb.RoomLive do
   use CoreWeb, :live_view
 
+  alias Core.E621Client
   alias Core.RoomRegistry
 
   @impl true
@@ -11,6 +12,8 @@ defmodule CoreWeb.RoomLive do
     <%= for player <- Enum.reverse(@state.players) do %>
       <%= player.name %> <br />
     <% end %>
+
+    <.button phx-click="start">START</.button>
 
     <%= if @current_player == nil do %>
       <.live_component
@@ -35,8 +38,7 @@ defmodule CoreWeb.RoomLive do
        |> assign(%{
          server_pid: server_pid,
          state: GenServer.call(server_pid, :get_state),
-         current_player: nil,
-         form: to_form(%{})
+         current_player: nil
        })}
     else
       {:ok,
@@ -44,6 +46,18 @@ defmodule CoreWeb.RoomLive do
        |> put_flash(:error, "Room with name #{room_name} doesn't exist.")
        |> redirect(to: "/")}
     end
+  end
+
+  @impl true
+  def handle_event("start", _params, socket) do
+    posts = E621Client.get_random_posts(1)
+
+    GenServer.call(
+      socket.assigns.server_pid,
+      {:update_state, socket.assigns.state.name, %{posts: posts, status: "post1"}}
+    )
+
+    {:noreply, socket}
   end
 
   @impl true

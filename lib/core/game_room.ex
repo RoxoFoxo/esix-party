@@ -44,7 +44,6 @@ defmodule Core.GameRoom do
   end
 
   def handle_call({:update_state, room_name, changes}, _from, state) do
-    # new_state = Map.put(state, :players, new_player_list)
     new_state = Map.merge(state, changes)
 
     broadcast({:new_state, new_state}, room_name)
