@@ -1,19 +1,19 @@
 defmodule CoreWeb.RoomLive do
   use CoreWeb, :live_view
 
-  alias Core.E621Client
   alias Core.RoomRegistry
+
+  @components %{"lobby" => CoreWeb.LobbyComponent}
 
   @impl true
   def render(assigns) do
     ~H"""
-    <p>Room name: <%= @state.name %></p>
-    <p>Players:</p>
-    <%= for player <- Enum.reverse(@state.players) do %>
-      <%= player.name %> <br />
-    <% end %>
-
-    <.button phx-click="start">START</.button>
+    <.live_component
+      module={fetch_component(@state.status)}
+      id="game_component"
+      state={@state}
+      server_pid={@server_pid}
+    />
 
     <%= if @current_player == nil do %>
       <.live_component
@@ -49,18 +49,6 @@ defmodule CoreWeb.RoomLive do
   end
 
   @impl true
-  def handle_event("start", _params, socket) do
-    posts = E621Client.get_random_posts(1)
-
-    GenServer.call(
-      socket.assigns.server_pid,
-      {:update_state, socket.assigns.state.name, %{posts: posts, status: "post1"}}
-    )
-
-    {:noreply, socket}
-  end
-
-  @impl true
   def handle_info({:new_state, new_state}, socket) do
     {:noreply, assign(socket, :state, new_state)}
   end
@@ -82,4 +70,6 @@ defmodule CoreWeb.RoomLive do
   end
 
   defp get_server_pid(name), do: GenServer.whereis({:via, Registry, {RoomRegistry, name}})
+
+  defp fetch_component(status), do: @components[status]
 end
