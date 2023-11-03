@@ -3,7 +3,10 @@ defmodule CoreWeb.RoomLive do
 
   alias Core.RoomRegistry
 
-  @components %{"lobby" => CoreWeb.LobbyComponent}
+  @components %{
+    lobby: CoreWeb.LobbyComponent,
+    guess_the_tag: CoreWeb.GuessTheTagComponent
+  }
 
   @impl true
   def render(assigns) do
@@ -13,6 +16,7 @@ defmodule CoreWeb.RoomLive do
       id="game_component"
       state={@state}
       server_pid={@server_pid}
+      current_player={@current_player}
     />
 
     <%= if @current_player == nil do %>

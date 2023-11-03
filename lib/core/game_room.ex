@@ -3,7 +3,14 @@ defmodule Core.GameRoom do
   use GenServer
 
   @enforce_keys [:name]
-  defstruct [:name, players: [], status: "lobby"]
+  defstruct [
+    :name,
+    :game_status,
+    :games,
+    players: [],
+    status: :lobby,
+    game_index: -1
+  ]
 
   alias Core.RoomRegistry
 
