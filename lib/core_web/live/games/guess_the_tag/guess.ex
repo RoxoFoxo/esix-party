@@ -18,7 +18,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
         />
 
         <:actions>
-          <.button phx-target={@myself}>Submit</.button>
+          <.button>Submit</.button>
         </:actions>
 
         <%= @fail_msg %>
@@ -43,7 +43,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
           assigns: %{
             server_pid: server_pid,
             current_player: current_player,
-            state: %{name: name, games: [game | tail]}
+            state: %{name: name, games: [game | tail], players: players}
           }
         } = socket
       ) do
@@ -54,12 +54,20 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
       guess_tags ->
         updated_game = put_in(game.guesses, Map.put(game.guesses, current_player, guess_tags))
 
+        # figure out how to use this, cause it would be cool
+        # JS.set_attribute({"readonly", ""}, to: "#tag_input")
+
         GenServer.call(
           server_pid,
           {:update_state, name, %{games: [updated_game | tail]}}
         )
 
-        # JS.set_attribute({"readonly", ""}, to: "#tag_input")
+        if all_players_guessed?(players, updated_game.guesses) do
+          GenServer.call(
+            server_pid,
+            {:update_state, name, %{game_status: :pick}}
+          )
+        end
 
         {:noreply, socket}
     end
@@ -72,5 +80,12 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
       5 -> guess_tags
       _ -> :invalid
     end
+  end
+
+  defp all_players_guessed?(players, guesses) do
+    player_names = Enum.map(players, & &1.name)
+    guessers = Map.keys(guesses)
+
+    Enum.all?(player_names, &(&1 in guessers))
   end
 end

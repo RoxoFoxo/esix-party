@@ -19,14 +19,9 @@ defmodule CoreWeb.NameInputComponent do
           phx-change="clear_msg"
           phx-submit="name_submit"
         >
+          <.input field={@form[:name]} type="text" autocomplete="off" maxlength="12" label="Username" />
           <:actions>
-            <.input
-              field={@form[:name]}
-              type="text"
-              autocomplete="off"
-              maxlength="12"
-              label="Username"
-            />
+            <.button>Submit</.button>
           </:actions>
         </.simple_form>
         <%= if @fail_msg do %>

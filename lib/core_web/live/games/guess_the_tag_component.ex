@@ -2,7 +2,8 @@ defmodule CoreWeb.Games.GuessTheTagComponent do
   use CoreWeb, :live_component
 
   @components %{
-    guess: CoreWeb.Games.GuessTheTag.GuessComponent
+    guess: CoreWeb.Games.GuessTheTag.GuessComponent,
+    pick: CoreWeb.Games.GuessTheTag.PickComponent
   }
 
   @impl true
@@ -26,16 +27,23 @@ defmodule CoreWeb.Games.GuessTheTagComponent do
   end
 
   @impl true
-  def update(assigns, socket) do
-    GenServer.call(
-      assigns.server_pid,
-      {:update_state, assigns.state.name, %{game_status: :guess}}
-    )
-
-    assigns = Map.put(assigns, :game_status, :guess)
+  def update(
+        %{
+          server_pid: server_pid,
+          state: %{game_status: game_status, name: room_name}
+        } = assigns,
+        socket
+      ) do
+    unless game_status do
+      GenServer.call(
+        server_pid,
+        {:update_state, room_name, %{game_status: :guess}}
+      )
+    end
 
     {:ok, assign(socket, assigns)}
   end
 
+  def fetch_component(nil), do: @components[:guess]
   def fetch_component(game_status), do: @components[game_status]
 end
