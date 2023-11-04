@@ -5,7 +5,7 @@ defmodule CoreWeb.RoomLive do
 
   @components %{
     lobby: CoreWeb.LobbyComponent,
-    guess_the_tag: CoreWeb.GuessTheTagComponent
+    guess_the_tag: CoreWeb.Games.GuessTheTagComponent
   }
 
   @impl true
@@ -13,7 +13,7 @@ defmodule CoreWeb.RoomLive do
     ~H"""
     <.live_component
       module={fetch_component(@state.status)}
-      id="game_component"
+      id="room_component"
       state={@state}
       server_pid={@server_pid}
       current_player={@current_player}
@@ -55,7 +55,6 @@ defmodule CoreWeb.RoomLive do
   @impl true
   def handle_info({:new_state, new_state}, socket) do
     {:noreply, assign(socket, :state, new_state)}
-    |> IO.inspect()
   end
 
   def handle_info({:name_submit, assigns}, socket) do

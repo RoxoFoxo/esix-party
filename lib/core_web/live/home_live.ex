@@ -20,20 +20,11 @@ defmodule CoreWeb.HomeLive do
       <.button phx-click="new_room">NEW ROOM</.button>
     </div>
     """
-
-    # <%= for post <- Core.E621Client.get_random_posts() do %>
-    # <img src={post.image} style="width:200px" />
-    # <a href={post.source} class="button">Image source</a>
-    # <% end %>
   end
 
   @impl true
   def mount(_params, _session, socket) do
-    # {:ok, assign(socket, :posts, Core.E621Client.get_random_posts())}
-
-    {:ok,
-     socket
-     |> assign_form()}
+    {:ok, assign(socket, :form, to_form(%{}))}
   end
 
   @impl true
@@ -53,9 +44,5 @@ defmodule CoreWeb.HomeLive do
     {:ok, pid} = GameRoom.new()
 
     GenServer.call(pid, :get_name)
-  end
-
-  defp assign_form(socket) do
-    assign(socket, :form, to_form(%{}))
   end
 end
