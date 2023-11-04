@@ -594,7 +594,7 @@ defmodule CoreWeb.CoreComponents do
       transition: {"transition-all transform ease-out duration-300", "opacity-0", "opacity-100"}
     )
     |> show("##{id}-container")
-    |> JS.add_class("overflow-hidden", to: "body")
+    # |> JS.add_class("overflow-hidden", to: "body")
     |> JS.focus_first(to: "##{id}-content")
   end
 

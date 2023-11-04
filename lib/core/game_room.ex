@@ -8,8 +8,7 @@ defmodule Core.GameRoom do
     :game_status,
     :games,
     players: [],
-    status: :lobby,
-    game_index: -1
+    status: :lobby
   ]
 
   alias Core.RoomRegistry
@@ -45,15 +44,12 @@ defmodule Core.GameRoom do
 
   @impl true
   def handle_call(:get_state, _from, state), do: {:reply, state, state}
+  def handle_call(:get_name, _from, %{name: room_name} = state), do: {:reply, room_name, state}
 
-  def handle_call(:get_name, _from, state) do
-    {:reply, state.name, state}
-  end
-
-  def handle_call({:update_state, room_name, changes}, _from, state) do
+  def handle_call({:update_state, _room_name, changes}, _from, state) do
     new_state = Map.merge(state, changes)
 
-    broadcast({:new_state, new_state}, room_name)
+    broadcast({:new_state, new_state}, state.name)
     {:reply, new_state, new_state}
   end
 

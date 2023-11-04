@@ -49,33 +49,31 @@ defmodule CoreWeb.LobbyComponent do
   end
 
   @impl true
-  def handle_event("start", params, socket) do
+  def handle_event(
+        "start",
+        %{"amount_of_rounds" => amount_of_rounds},
+        %{assigns: %{server_pid: server_pid, state: %{name: room_name}}} = socket
+      ) do
     # TODO: add minimum score param here
     # TODO: add other params here aswell
     games =
-      params["amount_of_rounds"]
+      amount_of_rounds
       |> E621Client.get_random_posts()
       |> GameSetup.generate_into_games()
 
-    {new_index, new_status} = get_next_status(games, socket.assigns.state.game_index)
+    new_status = get_new_status(games)
 
     GenServer.call(
-      socket.assigns.server_pid,
-      {:update_state, socket.assigns.state.name,
-       %{games: games, status: new_status, game_index: new_index}}
+      server_pid,
+      {:update_state, room_name, %{games: games, status: new_status}}
     )
 
     {:noreply, socket}
   end
 
-  defp get_next_status(games, game_index) do
-    new_index = game_index + 1
-
-    new_status =
-      games
-      |> Enum.at(game_index)
-      |> then(& &1.game_type)
-
-    {new_index, new_status}
+  defp get_new_status(games) do
+    games
+    |> Enum.at(0)
+    |> then(& &1.game_type)
   end
 end

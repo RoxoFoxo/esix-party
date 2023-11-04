@@ -55,6 +55,7 @@ defmodule CoreWeb.RoomLive do
   @impl true
   def handle_info({:new_state, new_state}, socket) do
     {:noreply, assign(socket, :state, new_state)}
+    |> IO.inspect()
   end
 
   def handle_info({:name_submit, assigns}, socket) do

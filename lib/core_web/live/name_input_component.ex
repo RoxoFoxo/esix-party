@@ -60,13 +60,12 @@ defmodule CoreWeb.NameInputComponent do
 
       new_player_list = [%Player{name: player_name, owner?: owner?} | players]
 
-      new_state =
-        GenServer.call(
-          socket.assigns.server_pid,
-          {:update_state, socket.assigns.state.name, %{players: new_player_list}}
-        )
+      GenServer.call(
+        socket.assigns.server_pid,
+        {:update_state, socket.assigns.state.name, %{players: new_player_list}}
+      )
 
-      send(self(), {:name_submit, %{state: new_state, current_player: player_name}})
+      send(self(), {:name_submit, %{current_player: player_name}})
       {:noreply, socket}
     else
       :in_use ->
