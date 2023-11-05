@@ -10,6 +10,9 @@ defmodule CoreWeb.Games.GuessTheTagComponent do
   def render(assigns) do
     ~H"""
     <div>
+      <img src={hd(@state.games).image} style="filter: blur(20px)" />
+      <%= hd(@state.games).source %> <br /><br />
+
       <.live_component
         module={fetch_component(@state.game_status)}
         id="guess_the_tag_component"

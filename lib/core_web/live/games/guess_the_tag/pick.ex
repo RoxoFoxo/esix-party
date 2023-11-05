@@ -7,8 +7,6 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <%= hd(@state.games).source %> <br /><br />
-
       <%= for {guesser, %{tags: tags}} <- hd(@state.games).guesses |> Enum.shuffle() do %>
         <.button
           phx-click="pick"

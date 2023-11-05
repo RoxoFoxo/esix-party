@@ -1,13 +1,12 @@
 defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
   use CoreWeb, :live_component
 
+  @disabled_attribute [{"disabled", ""}]
+
   @impl true
   def render(assigns) do
     ~H"""
     <div>
-      <img src={hd(@state.games).image} style="filter: blur(20px)" />
-      <%= hd(@state.games).source %>
-
       <.simple_form for={@form} id="guess_input" phx-target={@myself} phx-submit="guess_submit">
         <.input
           id="tag_input"
@@ -15,6 +14,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
           type="text"
           label="Guess five tags from this image!"
           autocomplete="off"
+          {disable_if_already_gussed(@current_player, hd(@state.games).guesses)}
         />
 
         <:actions>
@@ -89,5 +89,9 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
     guessers = Map.keys(guesses)
 
     Enum.all?(player_names, &(&1 in guessers))
+  end
+
+  defp disable_if_already_gussed(current_player, guesses) do
+    if current_player in Map.keys(guesses), do: @disabled_attribute, else: []
   end
 end
