@@ -43,7 +43,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
           assigns: %{
             server_pid: server_pid,
             current_player: current_player,
-            state: %{name: name, games: [game | tail], players: players}
+            state: %{games: [game | tail], players: players}
           }
         } = socket
       ) do
@@ -51,21 +51,23 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
       :invalid ->
         {:noreply, assign(socket, :fail_msg, "It needs to be five tags!")}
 
-      guess_tags ->
-        updated_game = put_in(game.guesses, Map.put(game.guesses, current_player, guess_tags))
+      tags ->
+        updated_guesses = Map.put(game.guesses, current_player, %{tags: tags, picked_by: []})
+
+        updated_game = put_in(game.guesses, updated_guesses)
 
         # figure out how to use this, cause it would be cool
         # JS.set_attribute({"readonly", ""}, to: "#tag_input")
 
         GenServer.call(
           server_pid,
-          {:update_state, name, %{games: [updated_game | tail]}}
+          {:update_state, %{games: [updated_game | tail]}}
         )
 
         if all_players_guessed?(players, updated_game.guesses) do
           GenServer.call(
             server_pid,
-            {:update_state, name, %{game_status: :pick}}
+            {:update_state, %{game_status: :pick}}
           )
         end
 

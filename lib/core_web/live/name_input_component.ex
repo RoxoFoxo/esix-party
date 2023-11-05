@@ -57,7 +57,7 @@ defmodule CoreWeb.NameInputComponent do
 
       GenServer.call(
         socket.assigns.server_pid,
-        {:update_state, socket.assigns.state.name, %{players: new_player_list}}
+        {:update_state, %{players: new_player_list}}
       )
 
       send(self(), {:name_submit, %{current_player: player_name}})

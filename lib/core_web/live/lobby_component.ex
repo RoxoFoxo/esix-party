@@ -52,7 +52,7 @@ defmodule CoreWeb.LobbyComponent do
   def handle_event(
         "start",
         %{"amount_of_rounds" => amount_of_rounds},
-        %{assigns: %{server_pid: server_pid, state: %{name: room_name}}} = socket
+        %{assigns: %{server_pid: server_pid}} = socket
       ) do
     # TODO: add minimum score param here
     # TODO: add other params here aswell
@@ -65,7 +65,7 @@ defmodule CoreWeb.LobbyComponent do
 
     GenServer.call(
       server_pid,
-      {:update_state, room_name, %{games: games, status: new_status}}
+      {:update_state, %{games: games, status: new_status}}
     )
 
     {:noreply, socket}
