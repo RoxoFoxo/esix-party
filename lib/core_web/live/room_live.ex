@@ -11,13 +11,15 @@ defmodule CoreWeb.RoomLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.live_component
-      module={fetch_component(@state.status)}
-      id="room_component"
-      state={@state}
-      server_pid={@server_pid}
-      current_player={@current_player}
-    />
+    <%= if @state do %>
+      <.live_component
+        module={fetch_component(@state.status)}
+        id="room_component"
+        state={@state}
+        server_pid={@server_pid}
+        current_player={@current_player}
+      />
+    <% end %>
 
     <%= if @current_player == nil do %>
       <.live_component
