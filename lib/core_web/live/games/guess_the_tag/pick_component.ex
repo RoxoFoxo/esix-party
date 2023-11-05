@@ -40,23 +40,45 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
             server_pid: server_pid,
             current_player: current_player,
             state: %{
-              games: [%{guesses: guesses} = game | tail]
+              games: [%{guesses: guesses} = game | tail],
+              players: players
             }
           }
         } = socket
       ) do
     guess = %{picked_by: picked_by} = guesses[guesser]
-
     new_picked_by = [current_player | picked_by]
-    updated_guess = Map.put(guess, :picked_by, new_picked_by)
-    updated_game = Map.merge(game, %{guesses: %{guesser => updated_guess}})
+
+    updated_game =
+      guess
+      |> Map.put(:picked_by, new_picked_by)
+      |> then(&Map.put(guesses, guesser, &1))
+      |> then(&Map.put(game, :guesses, &1))
+      |> IO.inspect(label: "WHAT NOW")
+
+    changes =
+      if all_players_picked?(players, updated_game) do
+        %{games: [updated_game | tail], game_status: :results}
+      else
+        %{games: [updated_game | tail]}
+      end
 
     GenServer.call(
       server_pid,
-      {:update_state, %{games: [updated_game | tail]}}
+      {:update_state, changes}
     )
 
     {:noreply, socket}
+  end
+
+  defp all_players_picked?(players, %{guesses: guesses}) do
+    pickers =
+      Enum.reduce(guesses, [], fn {_, %{picked_by: picked_by}}, acc -> picked_by ++ acc end)
+
+    players
+    |> Enum.map(fn %{name: player} -> player in pickers end)
+    |> Enum.all?()
+    |> IO.inspect(label: "FUCk")
   end
 
   def disable_if_guesser(player, guesser) when player == guesser, do: @disabled_attribute

@@ -9,7 +9,7 @@ defmodule CoreWeb.HomeLive do
     ~H"""
     <div>
       <.simple_form for={@form} id="join-room" phx-submit="join_room">
-        <.input field={@form[:room_name]} type="text" label="Room Name" />
+        <.input field={@form[:room_name]} type="text" label="Room Name" autocomplete="off" />
         <:actions>
           <.button>Join</.button>
         </:actions>

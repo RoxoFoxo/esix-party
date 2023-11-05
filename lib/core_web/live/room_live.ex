@@ -55,6 +55,22 @@ defmodule CoreWeb.RoomLive do
   end
 
   @impl true
+  def handle_event(
+        "next_game",
+        _params,
+        %{assigns: %{server_pid: server_pid, state: %{games: [_current | games]}}} = socket
+      ) do
+    new_status = get_new_status(games)
+
+    GenServer.call(
+      server_pid,
+      {:update_state, %{games: games, status: new_status, game_status: nil}}
+    )
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_info({:new_state, new_state}, socket) do
     {:noreply, assign(socket, :state, new_state)}
     |> IO.inspect()
@@ -74,6 +90,12 @@ defmodule CoreWeb.RoomLive do
       socket.assigns.server_pid,
       {:update_state, %{players: new_player_list}}
     )
+  end
+
+  defp get_new_status(games) do
+    games
+    |> Enum.at(0)
+    |> then(& &1.game_type)
   end
 
   defp get_server_pid(name), do: GenServer.whereis({:via, Registry, {RoomRegistry, name}})
