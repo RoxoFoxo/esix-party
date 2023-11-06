@@ -52,24 +52,21 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
         {:noreply, assign(socket, :fail_msg, "It needs to be five tags!")}
 
       tags ->
-        updated_guesses = Map.put(game.guesses, current_player, %{tags: tags, picked_by: []})
+        updated_game = insert_guess(tags, game, current_player)
 
-        updated_game = put_in(game.guesses, updated_guesses)
+        changes =
+          if all_players_guessed?(players, updated_game.guesses) do
+            updated_game =
+              game.tags
+              |> pick_random_tags()
+              |> insert_guess(updated_game, "eSix")
 
-        # figure out how to use this, cause it would be cool
-        # JS.set_attribute({"readonly", ""}, to: "#tag_input")
+            %{games: [updated_game | tail], game_status: :pick}
+          else
+            %{games: [updated_game | tail]}
+          end
 
-        GenServer.call(
-          server_pid,
-          {:update_state, %{games: [updated_game | tail]}}
-        )
-
-        if all_players_guessed?(players, updated_game.guesses) do
-          GenServer.call(
-            server_pid,
-            {:update_state, %{game_status: :pick}}
-          )
-        end
+        GenServer.call(server_pid, {:update_state, changes})
 
         {:noreply, socket}
     end
@@ -82,6 +79,18 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
       5 -> guess_tags
       _ -> :invalid
     end
+  end
+
+  defp insert_guess(tags, game, player) do
+    updated_guesses = Map.put(game.guesses, player, %{tags: tags, picked_by: []})
+    put_in(game.guesses, updated_guesses)
+  end
+
+  defp pick_random_tags(tags) do
+    tags
+    |> Map.values()
+    |> List.flatten()
+    |> Enum.take_random(5)
   end
 
   defp all_players_guessed?(players, guesses) do

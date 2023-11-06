@@ -1,6 +1,6 @@
 defmodule Core.E621Client do
   @moduledoc false
-  @callback get_random_posts(integer(), String.t(), String.t()) ::
+  @callback get_random_posts(integer(), String.t()) ::
               {:ok, list()} | {:error, term()}
 
   def get_random_posts(amount, tags) do
