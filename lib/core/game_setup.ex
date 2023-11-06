@@ -4,9 +4,16 @@ defmodule Core.GameSetup do
   @censors ["placeholder"]
 
   def generate_into_games(posts) do
-    posts
-    |> Enum.map(&randomize_game_type/1)
-    |> Enum.map(&add_game_type_keys/1)
+    games =
+      posts
+      |> Enum.map(&randomize_game_type/1)
+      |> Enum.map(&add_game_type_keys/1)
+
+    post_urls =
+      posts
+      |> Enum.map(&Map.delete(&1, :tags))
+
+    {games, post_urls}
   end
 
   # this will make more sense in the future, when there are more game types.

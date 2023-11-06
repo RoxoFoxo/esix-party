@@ -5,7 +5,8 @@ defmodule CoreWeb.RoomLive do
 
   @components %{
     lobby: CoreWeb.LobbyComponent,
-    guess_the_tag: CoreWeb.Games.GuessTheTagComponent
+    guess_the_tag: CoreWeb.Games.GuessTheTagComponent,
+    final_results: CoreWeb.FinalResultsComponent
   }
 
   @impl true
@@ -60,7 +61,11 @@ defmodule CoreWeb.RoomLive do
         _params,
         %{assigns: %{server_pid: server_pid, state: %{games: [_current | games]}}} = socket
       ) do
-    new_status = get_new_status(games)
+    new_status =
+      case games do
+        [] -> :final_results
+        _ -> get_new_status(games)
+      end
 
     GenServer.call(
       server_pid,

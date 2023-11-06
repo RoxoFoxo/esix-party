@@ -56,7 +56,7 @@ defmodule CoreWeb.LobbyComponent do
       ) do
     # TODO: add minimum score param here
     # TODO: add other params here aswell
-    games =
+    {games, post_urls} =
       amount_of_rounds
       |> E621Client.get_random_posts()
       |> GameSetup.generate_into_games()
@@ -65,7 +65,7 @@ defmodule CoreWeb.LobbyComponent do
 
     GenServer.call(
       server_pid,
-      {:update_state, %{games: games, status: new_status}}
+      {:update_state, %{games: games, post_urls: post_urls, status: new_status}}
     )
 
     {:noreply, socket}

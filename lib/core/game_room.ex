@@ -7,6 +7,7 @@ defmodule Core.GameRoom do
     :name,
     :game_status,
     :games,
+    :post_urls,
     players: [],
     status: :lobby
   ]
