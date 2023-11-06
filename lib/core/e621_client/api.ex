@@ -13,9 +13,9 @@ defmodule Core.E621Client.API do
   @default_tags ~w[ order:random -animated -gore -scat -watersports -young -loli -shota ]
                 |> Enum.join("+")
 
-  def get_random_posts(amount, min_score) do
+  def get_random_posts(amount, tags) do
     url =
-      "posts.json?limit=#{amount}&tags=score:>#{min_score}+#{@default_tags}"
+      "posts.json?limit=#{amount}&tags=score:>0+#{@default_tags}+#{tags}"
       |> URI.encode()
 
     with {:ok, result} <- get(url),
@@ -25,7 +25,7 @@ defmodule Core.E621Client.API do
     else
       error ->
         Logger.error(error)
-        error
+        {:error, error}
     end
   end
 end

@@ -1,12 +1,12 @@
 defmodule Core.E621Client do
   @moduledoc false
-  @callback get_random_posts(integer(), integer()) :: {:ok, list()}
+  @callback get_random_posts(integer(), String.t(), String.t()) ::
+              {:ok, list()} | {:error, term()}
 
-  # amount and min_score will be defined at the games settings later, maybe?
-  def get_random_posts(amount \\ 5, min_score \\ 200) do
+  def get_random_posts(amount, tags) do
     adapter = Application.get_env(:e621, :api, Core.E621Client.API)
 
-    adapter.get_random_posts(amount, min_score)
+    adapter.get_random_posts(amount, tags)
     |> then(fn {:ok, posts} -> posts end)
     |> Enum.map(&get_post_info/1)
   end

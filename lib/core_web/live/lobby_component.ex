@@ -25,7 +25,7 @@ defmodule CoreWeb.LobbyComponent do
         />
 
         <.input
-          field={@form[:tags_to_blacklist]}
+          field={@form[:blacklist]}
           type="text"
           placeholder="Global blacklist is always enabled. Separate tags using space."
           label="Blacklisted tags"
@@ -51,24 +51,51 @@ defmodule CoreWeb.LobbyComponent do
   @impl true
   def handle_event(
         "start",
-        %{"amount_of_rounds" => amount_of_rounds},
+        %{
+          "amount_of_rounds" => amount_of_rounds,
+          "blacklist" => blacklist
+        } = params,
         %{assigns: %{server_pid: server_pid}} = socket
       ) do
-    # TODO: add minimum score param here
-    # TODO: add other params here aswell
+    formatted_blacklist =
+      blacklist
+      |> String.split(" ", trim: true)
+      |> Enum.map(&("-" <> &1))
+
+    ratings =
+      params
+      |> Map.take(["safe?", "questionable?", "explicit?"])
+      |> Enum.map(&check_rating/1)
+      |> Enum.reject(&(&1 == ""))
+
+    tags =
+      (formatted_blacklist ++ ratings)
+      |> Enum.join("+")
+
     {games, post_urls} =
       amount_of_rounds
-      |> E621Client.get_random_posts()
+      |> E621Client.get_random_posts(tags)
       |> GameSetup.generate_into_games()
 
     new_status = get_new_status(games)
 
     GenServer.call(
       server_pid,
-      {:update_state, %{games: games, post_urls: post_urls, status: new_status}}
+      {:update_state,
+       %{games: games, post_urls: post_urls, status: new_status, blacklist: blacklist}}
     )
 
     {:noreply, socket}
+  end
+
+  def check_rating({_rating, "false"}), do: ""
+
+  def check_rating({rating, "true"}) do
+    case rating do
+      "safe?" -> "~rating:s"
+      "questionable?" -> "~rating:q"
+      "explicit?" -> "~rating:e"
+    end
   end
 
   defp get_new_status(games) do
