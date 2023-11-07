@@ -56,12 +56,15 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
 
         changes =
           if all_players_guessed?(players, updated_game.guesses) do
+            updated_players = award_players(players, updated_game)
+
             updated_game =
-              game.tags
+              updated_game
+              |> Map.get(:tags)
               |> pick_random_tags()
               |> insert_guess(updated_game, "eSix")
 
-            %{games: [updated_game | tail], game_status: :pick}
+            %{games: [updated_game | tail], players: updated_players, game_status: :pick}
           else
             %{games: [updated_game | tail]}
           end
@@ -73,10 +76,10 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
   end
 
   defp validate_guess(guess) do
-    guess_tags = String.split(guess, [" ", ","], trim: true)
+    tags = String.split(guess, [" ", ","], trim: true)
 
-    case length(guess_tags) do
-      5 -> guess_tags
+    case length(tags) do
+      5 -> tags
       _ -> :invalid
     end
   end
@@ -86,12 +89,40 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
     put_in(game.guesses, updated_guesses)
   end
 
+  defp award_players(players, %{guesses: guesses, tags: game_tags}) do
+    all_guessed_tags =
+      guesses
+      |> Enum.map(fn {_, %{tags: tags}} -> tags end)
+      |> List.flatten()
+
+    for %{name: player_name} = player <- players do
+      case guesses[player_name] do
+        %{tags: tags} ->
+          updated_score =
+            tags
+            |> Enum.uniq()
+            |> Enum.filter(&(&1 in flatten_esix_tags(game_tags)))
+            |> Enum.map(&String.downcase/1)
+            |> Enum.map(fn tag -> Enum.count(all_guessed_tags, &(&1 == tag)) end)
+            |> Enum.map(&(6 - &1))
+            |> Enum.reject(&(&1 < 0))
+            |> Enum.sum()
+
+          %{player | score: updated_score}
+
+        _ ->
+          player
+      end
+    end
+  end
+
   defp pick_random_tags(tags) do
     tags
-    |> Map.values()
-    |> List.flatten()
+    |> flatten_esix_tags()
     |> Enum.take_random(5)
   end
+
+  defp flatten_esix_tags(tags), do: tags |> Map.values() |> List.flatten()
 
   defp all_players_guessed?(players, guesses) do
     player_names = Enum.map(players, & &1.name)
