@@ -4,6 +4,7 @@ defmodule CoreWeb.NameInputComponent do
   alias Core.Player
 
   @in_use_msg "Name is already in use!"
+  @esix_msg "Hey, that's my name! Come up with something different!"
   @empty_msg "Yeah that's the input box, write a name on it!"
 
   @impl true
@@ -46,25 +47,28 @@ defmodule CoreWeb.NameInputComponent do
     {:noreply, assign(socket, :fail_msg, nil)}
   end
 
-  def handle_event("name_submit", %{"name" => player_name}, socket) do
-    players = socket.assigns.state.players
-
+  def handle_event(
+        "name_submit",
+        %{"name" => player_name},
+        %{assigns: %{server_pid: server_pid, state: %{players: players}}} = socket
+      ) do
     with false <- name_in_use?(player_name, players) && :in_use,
+         false <- player_name =~ ~r'^eSix$'i && :esix,
          false <- player_name == "" && :empty do
       owner? = players == []
 
       new_player_list = [%Player{name: player_name, owner?: owner?} | players]
 
-      GenServer.call(
-        socket.assigns.server_pid,
-        {:update_state, %{players: new_player_list}}
-      )
+      GenServer.call(server_pid, {:update_state, %{players: new_player_list}})
 
       send(self(), {:name_submit, %{current_player: player_name}})
       {:noreply, socket}
     else
       :in_use ->
         {:noreply, assign(socket, fail_msg: @in_use_msg)}
+
+      :esix ->
+        {:noreply, assign(socket, fail_msg: @esix_msg)}
 
       :empty ->
         {:noreply, assign(socket, fail_msg: @empty_msg)}
