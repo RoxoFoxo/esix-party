@@ -8,14 +8,15 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
       <a href={hd(@state.games).source} target="_blank">Source</a>
       <hr />
 
+      <p>Scores:</p>
       <%= for %{name: name, score: score} <- @state.players do %>
-        <%= name <> " score: " <> to_string(score) %> <br />
+        <%= name <> " " <> to_string(score) %> <br />
       <% end %>
-      <br />
+      <hr />
 
       <%= for {guesser, %{tags: tags, picked_by: picked_by}}  <- hd(@state.games).guesses do %>
+        <%= guesser %>'s guess <br />
         <.button phx-click="pick" phx-target={@myself} style="width: 200px; text-align: left" disabled>
-          <%= guesser %> <br />
           <%= for tag <- tags do %>
             <%= tag %> <br />
           <% end %>

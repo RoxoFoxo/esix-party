@@ -14,11 +14,13 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
           type="text"
           label="Guess five tags from this image!"
           autocomplete="off"
-          {disable_if_already_gussed(@current_player, hd(@state.games).guesses)}
+          {disable_if_guessed(@current_player, hd(@state.games).guesses)}
         />
 
         <:actions>
-          <.button>Submit</.button>
+          <.button {disable_if_guessed(@current_player, hd(@state.games).guesses)}>
+            Submit
+          </.button>
         </:actions>
 
         <%= @fail_msg %>
@@ -43,7 +45,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
           assigns: %{
             server_pid: server_pid,
             current_player: current_player,
-            state: %{games: [game | tail], players: players}
+            state: %{games: [%{tags: game_tags} = game | tail], players: players}
           }
         } = socket
       ) do
@@ -52,19 +54,24 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
         {:noreply, assign(socket, :fail_msg, "It needs to be five tags!")}
 
       tags ->
-        updated_game = insert_guess(tags, game, current_player)
+        updated_game = insert_guess(game, tags, current_player)
 
         changes =
           if all_players_guessed?(players, updated_game.guesses) do
-            updated_players = award_players(players, updated_game)
+            {updated_guesses, updated_players} = award_guesses(players, updated_game)
+
+            esix_tags = pick_random_tags(game_tags)
 
             updated_game =
               updated_game
-              |> Map.get(:tags)
-              |> pick_random_tags()
-              |> insert_guess(updated_game, "eSix")
+              |> Map.put(:guesses, updated_guesses)
+              |> insert_guess(esix_tags, "eSix")
 
-            %{games: [updated_game | tail], players: updated_players, game_status: :pick}
+            %{
+              games: [updated_game | tail],
+              players: updated_players,
+              game_status: :pick
+            }
           else
             %{games: [updated_game | tail]}
           end
@@ -84,36 +91,44 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
     end
   end
 
-  defp insert_guess(tags, game, player) do
-    updated_guesses = Map.put(game.guesses, player, %{tags: tags, picked_by: []})
-    put_in(game.guesses, updated_guesses)
+  defp insert_guess(%{guesses: guesses} = game, tags, player_name) do
+    score = if player_name == "eSix", do: 25
+
+    updated_guesses = Map.put(guesses, player_name, %{tags: tags, picked_by: [], score: score})
+    %{game | guesses: updated_guesses}
   end
 
-  defp award_players(players, %{guesses: guesses, tags: game_tags}) do
+  defp award_guesses(players, %{guesses: guesses, tags: game_tags}) do
     all_guessed_tags =
       guesses
       |> Enum.map(fn {_, %{tags: tags}} -> tags end)
       |> List.flatten()
 
-    for %{name: player_name} = player <- players do
-      case guesses[player_name] do
-        %{tags: tags} ->
-          updated_score =
-            tags
-            |> Enum.uniq()
-            |> Enum.filter(&(&1 in flatten_esix_tags(game_tags)))
-            |> Enum.map(&String.downcase/1)
-            |> Enum.map(fn tag -> Enum.count(all_guessed_tags, &(&1 == tag)) end)
-            |> Enum.map(&(6 - &1))
-            |> Enum.reject(&(&1 < 0))
-            |> Enum.sum()
+    updated_guesses =
+      for {guesser, %{tags: tags} = guess} <- guesses do
+        guess_score =
+          tags
+          |> Enum.uniq()
+          |> Enum.filter(&(&1 in flatten_esix_tags(game_tags)))
+          |> Enum.map(&String.downcase/1)
+          |> Enum.map(fn tag -> Enum.count(all_guessed_tags, &(&1 == tag)) end)
+          |> Enum.map(&(6 - &1))
+          |> Enum.reject(&(&1 < 0))
+          |> Enum.sum()
 
-          %{player | score: updated_score}
-
-        _ ->
-          player
+        {guesser, %{guess | score: guess_score}}
       end
-    end
+      |> Map.new()
+
+    updated_players =
+      for %{name: player_name, score: score} = player <- players do
+        case updated_guesses[player_name] do
+          %{score: guess_score} -> %{player | score: score + guess_score}
+          _ -> player
+        end
+      end
+
+    {updated_guesses, updated_players}
   end
 
   defp pick_random_tags(tags) do
@@ -131,7 +146,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
     Enum.all?(player_names, &(&1 in guessers))
   end
 
-  defp disable_if_already_gussed(current_player, guesses) do
+  defp disable_if_guessed(current_player, guesses) do
     if current_player in Map.keys(guesses), do: @disabled_attribute, else: []
   end
 end
