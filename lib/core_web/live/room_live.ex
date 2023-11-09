@@ -92,13 +92,17 @@ defmodule CoreWeb.RoomLive do
           }
         } = socket
       )
-      when current_player do
+      when current_player != nil do
     new_players = Enum.reject(players, &(&1.name == current_player))
 
-    update_state(socket, server_pid, %{players: new_players})
+    case is_owner?(current_player, players) do
+      true -> List.update_at(new_players, -1, &Map.put(&1, :owner?, true))
+      false -> new_players
+    end
+    |> then(&update_state(socket, server_pid, %{players: &1}))
   end
 
-  def terminate(_reason, _socket), do: :ok
+  # def terminate(_reason, _socket), do: IO.inspect(:ok)
 
   defp get_new_status(games) do
     games

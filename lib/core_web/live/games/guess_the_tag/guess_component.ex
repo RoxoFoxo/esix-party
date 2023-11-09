@@ -16,6 +16,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
           type="text"
           label="Guess five tags from this image!"
           autocomplete="off"
+          autofocus
           {disable_if_guessed(@current_player, hd(@state.games).guesses)}
         />
 

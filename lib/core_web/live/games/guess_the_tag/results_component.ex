@@ -1,6 +1,8 @@
 defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
   use CoreWeb, :live_component
 
+  import CoreWeb.RoomUtils
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -25,7 +27,9 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
         <hr />
       <% end %>
 
-      <.button phx-click="next_game">Continue</.button>
+      <.button phx-click="next_game" {hide_if_not_owner(@current_player, @state.players)}>
+        Continue
+      </.button>
     </div>
     """
   end

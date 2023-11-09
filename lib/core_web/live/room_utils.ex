@@ -18,4 +18,20 @@ defmodule CoreWeb.RoomUtils do
     |> LiveView.put_flash(kind, msg)
     |> LiveView.redirect(to: "/")
   end
+
+  def hide_if_not_owner(nil, _players), do: [{"hidden", ""}]
+
+  def hide_if_not_owner(current_player, players) do
+    case is_owner?(current_player, players) do
+      true -> []
+      false -> [{"hidden", ""}]
+    end
+  end
+
+  def is_owner?(current_player, players) do
+    case Enum.find(players, &(&1.name == current_player)) do
+      %{owner?: owner?} -> owner?
+      _ -> false
+    end
+  end
 end

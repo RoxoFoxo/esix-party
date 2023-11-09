@@ -192,7 +192,7 @@ defmodule CoreWeb.CoreComponents do
   """
   attr :type, :string, default: nil
   attr :class, :string, default: nil
-  attr :rest, :global, include: ~w(disabled form name value)
+  attr :rest, :global, include: ~w(disabled form name value hidden)
 
   slot :inner_block, required: true
 
