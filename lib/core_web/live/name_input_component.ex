@@ -1,6 +1,8 @@
 defmodule CoreWeb.NameInputComponent do
   use CoreWeb, :live_component
 
+  import CoreWeb.RoomUtils
+
   alias Core.Player
 
   @in_use_msg "Name is already in use!"
@@ -12,7 +14,6 @@ defmodule CoreWeb.NameInputComponent do
     ~H"""
     <div>
       <.modal id="name_input_modal" show>
-        <p>Please input your name:</p>
         <.simple_form
           for={@form}
           id="new_player"
@@ -20,7 +21,13 @@ defmodule CoreWeb.NameInputComponent do
           phx-change="clear_msg"
           phx-submit="name_submit"
         >
-          <.input field={@form[:name]} type="text" autocomplete="off" maxlength="12" label="Username" />
+          <.input
+            field={@form[:name]}
+            type="text"
+            autocomplete="off"
+            maxlength="12"
+            label="Enter a Username:"
+          />
           <:actions>
             <.button>Submit</.button>
           </:actions>
@@ -55,14 +62,12 @@ defmodule CoreWeb.NameInputComponent do
     with false <- name_in_use?(player_name, players) && :in_use,
          false <- player_name =~ ~r'^eSix$'i && :esix,
          false <- player_name == "" && :empty do
-      owner? = players == []
-
-      new_player_list = [%Player{name: player_name, owner?: owner?} | players]
-
-      GenServer.call(server_pid, {:update_state, %{players: new_player_list}})
-
       send(self(), {:name_submit, %{current_player: player_name}})
-      {:noreply, socket}
+
+      owner? = players == []
+      new_players = [%Player{name: player_name, owner?: owner?} | players]
+
+      update_state(socket, server_pid, %{players: new_players})
     else
       :in_use ->
         {:noreply, assign(socket, fail_msg: @in_use_msg)}

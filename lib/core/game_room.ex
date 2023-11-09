@@ -1,6 +1,6 @@
 defmodule Core.GameRoom do
   @moduledoc false
-  use GenServer
+  use GenServer, restart: :temporary
 
   @enforce_keys [:name]
   defstruct [
@@ -11,6 +11,9 @@ defmodule Core.GameRoom do
     players: [],
     status: :lobby
   ]
+
+  @one_minute 60000
+  @fifteen_minutes 900_000
 
   alias Core.RoomRegistry
 
@@ -44,14 +47,29 @@ defmodule Core.GameRoom do
   end
 
   @impl true
-  def handle_call(:get_state, _from, state), do: {:reply, state, state}
-  def handle_call(:get_name, _from, %{name: room_name} = state), do: {:reply, room_name, state}
+  def handle_call(:get_name, _from, %{name: room_name} = state) do
+    {:reply, room_name, state, @one_minute}
+  end
+
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state, @one_minute}
+  end
 
   def handle_call({:update_state, changes}, _from, state) do
     new_state = Map.merge(state, changes)
 
     broadcast({:new_state, new_state}, state.name)
-    {:reply, new_state, new_state}
+    {:reply, new_state, new_state, @fifteen_minutes}
+  end
+
+  @impl true
+  def handle_info(:timeout, state) do
+    {:stop, :timeout, state}
+  end
+
+  @impl true
+  def terminate(:timeout, state) do
+    {:shutdown, state}
   end
 
   defp broadcast(msg, name) do

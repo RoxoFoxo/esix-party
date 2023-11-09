@@ -1,6 +1,8 @@
 defmodule CoreWeb.RoomLive do
   use CoreWeb, :live_view
 
+  import CoreWeb.RoomUtils
+
   alias Core.RoomRegistry
 
   @components %{
@@ -48,10 +50,7 @@ defmodule CoreWeb.RoomLive do
          current_player: nil
        })}
     else
-      {:ok,
-       socket
-       |> put_flash(:error, "Room with name #{room_name} doesn't exist.")
-       |> redirect(to: "/")}
+      {:ok, redirect_to_home(socket, {:error, "Room with name #{room_name} doesn't exist."})}
     end
   end
 
@@ -67,12 +66,9 @@ defmodule CoreWeb.RoomLive do
         _ -> get_new_status(games)
       end
 
-    GenServer.call(
-      server_pid,
-      {:update_state, %{games: games, status: new_status, game_status: nil}}
-    )
+    changes = %{games: games, status: new_status, game_status: nil}
 
-    {:noreply, socket}
+    update_state(socket, server_pid, changes)
   end
 
   @impl true
@@ -86,16 +82,23 @@ defmodule CoreWeb.RoomLive do
   end
 
   @impl true
-  def terminate(_reason, socket) do
-    new_player_list =
-      socket.assigns.state.players
-      |> Enum.reject(&(&1.name == socket.assigns.current_player))
+  def terminate(
+        _reason,
+        %{
+          assigns: %{
+            server_pid: server_pid,
+            current_player: current_player,
+            state: %{players: players}
+          }
+        } = socket
+      )
+      when current_player do
+    new_players = Enum.reject(players, &(&1.name == current_player))
 
-    GenServer.call(
-      socket.assigns.server_pid,
-      {:update_state, %{players: new_player_list}}
-    )
+    update_state(socket, server_pid, %{players: new_players})
   end
+
+  def terminate(_reason, _socket), do: :ok
 
   defp get_new_status(games) do
     games
