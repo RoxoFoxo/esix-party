@@ -21,8 +21,9 @@ defmodule Core.E621Client do
     }
   end
 
-  defp remove_bad_tags(tags) do
+  defp remove_bad_tags(%{"artist" => artist_tags} = tags) do
     tags
     |> Map.drop(["meta", "invalid"])
+    |> Map.put("artist", Enum.reject(artist_tags, &(&1 == "conditional_dnp")))
   end
 end

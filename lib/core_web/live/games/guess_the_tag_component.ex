@@ -39,10 +39,7 @@ defmodule CoreWeb.Games.GuessTheTagComponent do
         socket
       ) do
     unless game_status do
-      GenServer.call(
-        server_pid,
-        {:update_state, %{game_status: :guess}}
-      )
+      GenServer.call(server_pid, {:update_state, %{game_status: :guess}})
     end
 
     {:ok, assign(socket, assigns)}

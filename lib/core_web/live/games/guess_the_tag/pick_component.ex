@@ -1,6 +1,8 @@
 defmodule CoreWeb.Games.GuessTheTag.PickComponent do
   use CoreWeb, :live_component
 
+  import CoreWeb.RoomUtils
+
   @disabled_attribute [{"disabled", ""}]
 
   @impl true
@@ -64,12 +66,7 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
         %{games: [updated_game | tail]}
       end
 
-    GenServer.call(
-      server_pid,
-      {:update_state, changes}
-    )
-
-    {:noreply, socket}
+    update_state(socket, server_pid, changes)
   end
 
   defp all_players_picked?(players, %{guesses: guesses}) do
@@ -86,7 +83,7 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
       guess = Enum.find(guesses, fn {_, %{picked_by: picked_by}} -> player_name in picked_by end)
 
       case guess do
-        {_, %{score: guess_score}} -> %{player | score: player_score + guess_score}
+        {_, %{score: guess_score}} -> %{player | score: player_score + div(guess_score, 2)}
         _ -> player
       end
     end

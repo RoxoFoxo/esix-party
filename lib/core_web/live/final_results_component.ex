@@ -1,6 +1,8 @@
 defmodule CoreWeb.FinalResultsComponent do
   use CoreWeb, :live_component
 
+  import CoreWeb.RoomUtils
+
   def render(assigns) do
     ~H"""
     <div>
@@ -19,9 +21,7 @@ defmodule CoreWeb.FinalResultsComponent do
   end
 
   def handle_event("new_match", _params, %{assigns: %{server_pid: server_pid}} = socket) do
-    GenServer.call(server_pid, {:update_state, %{status: :lobby, post_urls: []}})
-
-    {:noreply, socket}
+    update_state(socket, server_pid, %{status: :lobby, post_urls: []})
   end
 
   def order_by_score(players),

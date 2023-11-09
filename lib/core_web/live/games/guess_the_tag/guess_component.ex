@@ -1,6 +1,8 @@
 defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
   use CoreWeb, :live_component
 
+  import CoreWeb.RoomUtils
+
   @disabled_attribute [{"disabled", ""}]
 
   @impl true
@@ -60,7 +62,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
           if all_players_guessed?(players, updated_game.guesses) do
             {updated_guesses, updated_players} = award_guesses(players, updated_game)
 
-            esix_tags = pick_random_tags(game_tags)
+            esix_tags = Enum.take_random(game_tags, 5)
 
             updated_game =
               updated_game
@@ -76,9 +78,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
             %{games: [updated_game | tail]}
           end
 
-        GenServer.call(server_pid, {:update_state, changes})
-
-        {:noreply, socket}
+        update_state(socket, server_pid, changes)
     end
   end
 
@@ -109,7 +109,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
         guess_score =
           tags
           |> Enum.uniq()
-          |> Enum.filter(&(&1 in flatten_esix_tags(game_tags)))
+          |> Enum.filter(&(&1 in game_tags))
           |> Enum.map(&String.downcase/1)
           |> Enum.map(fn tag -> Enum.count(all_guessed_tags, &(&1 == tag)) end)
           |> Enum.map(&(6 - &1))
@@ -130,14 +130,6 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
 
     {updated_guesses, updated_players}
   end
-
-  defp pick_random_tags(tags) do
-    tags
-    |> flatten_esix_tags()
-    |> Enum.take_random(5)
-  end
-
-  defp flatten_esix_tags(tags), do: tags |> Map.values() |> List.flatten()
 
   defp all_players_guessed?(players, guesses) do
     player_names = Enum.map(players, & &1.name)

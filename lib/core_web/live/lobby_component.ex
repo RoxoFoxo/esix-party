@@ -1,6 +1,8 @@
 defmodule CoreWeb.LobbyComponent do
   use CoreWeb, :live_component
 
+  import CoreWeb.RoomUtils
+
   alias Core.E621Client
   alias Core.GameSetup
 
@@ -77,15 +79,14 @@ defmodule CoreWeb.LobbyComponent do
       |> E621Client.get_random_posts(tags)
       |> GameSetup.generate_into_games()
 
-    new_status = get_new_status(games)
+    changes = %{
+      games: games,
+      post_urls: post_urls,
+      status: get_new_status(games),
+      blacklist: blacklist
+    }
 
-    GenServer.call(
-      server_pid,
-      {:update_state,
-       %{games: games, post_urls: post_urls, status: new_status, blacklist: blacklist}}
-    )
-
-    {:noreply, socket}
+    update_state(socket, server_pid, changes)
   end
 
   def check_rating({_rating, "false"}), do: ""

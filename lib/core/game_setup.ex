@@ -6,6 +6,7 @@ defmodule Core.GameSetup do
   def generate_into_games(posts) do
     games =
       posts
+      |> Enum.map(&flatten_tags/1)
       |> Enum.map(&randomize_game_type/1)
       |> Enum.map(&add_game_type_keys/1)
 
@@ -14,6 +15,10 @@ defmodule Core.GameSetup do
       |> Enum.map(&Map.delete(&1, :tags))
 
     {games, post_urls}
+  end
+
+  defp flatten_tags(%{tags: tags} = post) do
+    %{post | tags: tags |> Map.values() |> List.flatten()}
   end
 
   # this will make more sense in the future, when there are more game types.
