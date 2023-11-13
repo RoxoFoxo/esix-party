@@ -1,6 +1,8 @@
 defmodule CoreWeb.Games.GuessTheTagComponent do
   use CoreWeb, :live_component
 
+  import CoreWeb.RoomUtils
+
   alias CoreWeb.Games.GuessTheTag
 
   @components %{
@@ -38,9 +40,7 @@ defmodule CoreWeb.Games.GuessTheTagComponent do
         } = assigns,
         socket
       ) do
-    unless game_status do
-      GenServer.call(server_pid, {:update_state, %{game_status: :guess}})
-    end
+    unless game_status, do: update_state(socket, server_pid, %{game_status: :guess})
 
     {:ok, assign(socket, assigns)}
   end

@@ -9,6 +9,7 @@ defmodule Core.GameRoom do
     :games,
     :post_urls,
     :timer_ref,
+    :blacklist,
     players: [],
     status: :lobby
   ]

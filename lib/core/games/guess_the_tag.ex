@@ -1,8 +1,10 @@
 defmodule Core.Games.GuessTheTag do
   @moduledoc """
-  Functions related to the Guess The Tag game type
+  Module to the Guess The Tag game type
   """
-  
+
+  defstruct [:image, :source, :tags, guesses: %{}, type: :guess_the_tag, censor: "placeholder"]
+
   def guess_changes([%{guesses: guesses, tags: game_tags} = game | tail], players, timer_ref) do
     updated_guesses = update_guesses(guesses, game_tags)
 

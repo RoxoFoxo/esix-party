@@ -89,7 +89,7 @@ defmodule CoreWeb.LobbyComponent do
     changes = %{
       games: games,
       post_urls: post_urls,
-      status: game.game_type,
+      status: game.type,
       blacklist: blacklist,
       timer_ref: Process.send_after(self(), :timer, 60000)
     }

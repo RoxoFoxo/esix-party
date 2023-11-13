@@ -63,7 +63,7 @@ defmodule CoreWeb.RoomLive do
       ) do
     new_status =
       case games do
-        [game | _] -> game.game_type
+        [game | _] -> game.type
         [] -> :final_results
       end
 
