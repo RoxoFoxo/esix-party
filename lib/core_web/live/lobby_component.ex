@@ -81,7 +81,7 @@ defmodule CoreWeb.LobbyComponent do
       (formatted_blacklist ++ ratings)
       |> Enum.join("+")
 
-    {games, post_urls} =
+    {[game | _] = games, post_urls} =
       amount_of_rounds
       |> E621Client.get_random_posts(tags)
       |> GameSetup.generate_into_games()
@@ -89,8 +89,9 @@ defmodule CoreWeb.LobbyComponent do
     changes = %{
       games: games,
       post_urls: post_urls,
-      status: get_new_status(games),
-      blacklist: blacklist
+      status: game.game_type,
+      blacklist: blacklist,
+      timer_ref: Process.send_after(self(), :timer, 60000)
     }
 
     update_state(socket, server_pid, changes)
@@ -104,11 +105,5 @@ defmodule CoreWeb.LobbyComponent do
       "questionable?" -> "~rating:q"
       "explicit?" -> "~rating:e"
     end
-  end
-
-  defp get_new_status(games) do
-    games
-    |> Enum.at(0)
-    |> then(& &1.game_type)
   end
 end

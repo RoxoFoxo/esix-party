@@ -4,6 +4,7 @@ defmodule CoreWeb.RoomLive do
   import CoreWeb.RoomUtils
 
   alias Core.RoomRegistry
+  alias Core.Games.GuessTheTag
 
   @components %{
     lobby: CoreWeb.LobbyComponent,
@@ -62,11 +63,16 @@ defmodule CoreWeb.RoomLive do
       ) do
     new_status =
       case games do
+        [game | _] -> game.game_type
         [] -> :final_results
-        _ -> get_new_status(games)
       end
 
-    changes = %{games: games, status: new_status, game_status: nil}
+    changes = %{
+      games: games,
+      status: new_status,
+      game_status: nil,
+      timer_ref: Process.send_after(self(), :timer, 60000)
+    }
 
     update_state(socket, server_pid, changes)
   end
@@ -79,6 +85,32 @@ defmodule CoreWeb.RoomLive do
 
   def handle_info({:name_submit, assigns}, socket) do
     {:noreply, assign(socket, assigns)}
+  end
+
+  def handle_info(
+        :timer,
+        %{
+          assigns: %{
+            server_pid: server_pid,
+            state: %{
+              players: players,
+              games: games,
+              game_status: game_status,
+              timer_ref: timer_ref
+            }
+          }
+        } = socket
+      ) do
+    IO.inspect(game_status, label: "GAME_STATUS")
+
+    changes =
+      case game_status do
+        :guess -> GuessTheTag.guess_changes(games, players, timer_ref)
+        :pick -> %{game_status: :results, timer_ref: nil}
+      end
+      |> IO.inspect(label: "TIMER")
+
+    update_state(socket, server_pid, changes)
   end
 
   @impl true
@@ -102,13 +134,7 @@ defmodule CoreWeb.RoomLive do
     |> then(&update_state(socket, server_pid, %{players: &1}))
   end
 
-  # def terminate(_reason, _socket), do: IO.inspect(:ok)
-
-  defp get_new_status(games) do
-    games
-    |> Enum.at(0)
-    |> then(& &1.game_type)
-  end
+  def terminate(_reason, _socket), do: :ok
 
   defp get_server_pid(name), do: GenServer.whereis({:via, Registry, {RoomRegistry, name}})
 

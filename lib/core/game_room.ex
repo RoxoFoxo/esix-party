@@ -8,6 +8,7 @@ defmodule Core.GameRoom do
     :game_status,
     :games,
     :post_urls,
+    :timer_ref,
     players: [],
     status: :lobby
   ]
@@ -52,7 +53,7 @@ defmodule Core.GameRoom do
   end
 
   def handle_call(:get_state, _from, state) do
-    {:reply, state, state, @one_minute}
+    {:reply, state, state, @fifteen_minutes}
   end
 
   def handle_call({:update_state, changes}, _from, state) do
