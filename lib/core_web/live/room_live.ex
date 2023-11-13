@@ -106,7 +106,7 @@ defmodule CoreWeb.RoomLive do
     changes =
       case game_status do
         :guess -> GuessTheTag.guess_changes(games, players, timer_ref)
-        :pick -> %{game_status: :results, timer_ref: nil}
+        :pick -> GuessTheTag.pick_changes(games, players, timer_ref)
       end
       |> IO.inspect(label: "TIMER")
 
