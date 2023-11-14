@@ -3,7 +3,9 @@ defmodule Core.Games.GuessTheTag do
   Module to the Guess The Tag game type
   """
 
-  defstruct [:image, :source, :tags, guesses: %{}, type: :guess_the_tag, censor: "placeholder"]
+  alias Core.Games.GuessTheTag.Guess
+
+  defstruct [:image, :source, :tags, guesses: [], type: :guess_the_tag, censor: "placeholder"]
 
   def guess_changes([%{guesses: guesses, tags: game_tags} = game | tail], players, timer_ref) do
     Process.cancel_timer(timer_ref)
@@ -26,10 +28,10 @@ defmodule Core.Games.GuessTheTag do
   defp add_score_to_guesses(guesses, game_tags) do
     all_guessed_tags =
       guesses
-      |> Enum.map(fn {_, %{tags: tags}} -> tags end)
+      |> Enum.map(fn %{tags: tags} -> tags end)
       |> List.flatten()
 
-    for {guesser, %{tags: tags} = guess} <- guesses do
+    for %{tags: tags} = guess <- guesses do
       guess_score =
         tags
         |> Enum.map(&String.downcase/1)
@@ -40,14 +42,13 @@ defmodule Core.Games.GuessTheTag do
         |> Enum.reject(&(&1 < 0))
         |> Enum.sum()
 
-      {guesser, %{guess | score: guess_score}}
+      %{guess | score: guess_score}
     end
-    |> Map.new()
   end
 
   defp award_guessers_for_guessing(players, guesses) do
     for %{name: player_name, score: score} = player <- players do
-      case guesses[player_name] do
+      case Enum.find(guesses, &(&1.guesser == player_name)) do
         %{score: guess_score} -> %{player | score: score + guess_score}
         _ -> player
       end
@@ -57,7 +58,10 @@ defmodule Core.Games.GuessTheTag do
   defp insert_esix_guess(%{tags: game_tags, guesses: guesses} = game) do
     esix_tags = Enum.take_random(game_tags, 5)
 
-    %{game | guesses: Map.put(guesses, "eSix", %{tags: esix_tags, picked_by: [], score: 25})}
+    %{
+      game
+      | guesses: [%Guess{guesser: "eSix", tags: esix_tags, picked_by: [], score: 25} | guesses]
+    }
   end
 
   def pick_changes([%{guesses: guesses} = game | tail], players, timer_ref) do
@@ -75,17 +79,17 @@ defmodule Core.Games.GuessTheTag do
 
   defp award_pickers(players, guesses) do
     for %{name: player_name, score: player_score} = player <- players do
-      guess = Enum.find(guesses, fn {_, %{picked_by: picked_by}} -> player_name in picked_by end)
+      guess = Enum.find(guesses, fn %{picked_by: picked_by} -> player_name in picked_by end)
 
       case guess do
-        {_, %{score: guess_score}} -> %{player | score: player_score + div(guess_score, 2)}
+        %{score: guess_score} -> %{player | score: player_score + div(guess_score, 2)}
         _ -> player
       end
     end
   end
 
   defp award_guessers(players, guesses) do
-    for {guesser, %{picked_by: picked_by}} <- guesses do
+    for %{guesser: guesser, picked_by: picked_by} <- guesses do
       case guesser do
         "eSix" ->
           :esix

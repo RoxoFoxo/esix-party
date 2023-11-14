@@ -11,7 +11,7 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <%= for {guesser, %{tags: tags}} <- hd(@state.games).guesses |> Enum.shuffle() do %>
+      <%= for %{guesser: guesser, tags: tags} <- hd(@state.games).guesses |> Enum.shuffle() do %>
         <.button
           phx-click="pick"
           phx-target={@myself}
@@ -51,8 +51,16 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
           }
         } = socket
       ) do
-    %{picked_by: picked_by} = guesses[guesser]
-    updated_game = put_in(game.guesses[guesser].picked_by, [current_player | picked_by])
+    updated_guesses =
+      Enum.map(guesses, fn
+        %{guesser: ^guesser, picked_by: picked_by} = guess ->
+          %{guess | picked_by: [current_player | picked_by]}
+
+        guess ->
+          guess
+      end)
+
+    updated_game = Map.put(game, :guesses, updated_guesses)
 
     changes =
       if all_players_picked?(players, updated_game) do
@@ -66,7 +74,7 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
 
   defp all_players_picked?(players, %{guesses: guesses}) do
     pickers =
-      Enum.reduce(guesses, [], fn {_, %{picked_by: picked_by}}, acc -> picked_by ++ acc end)
+      Enum.reduce(guesses, [], fn %{picked_by: picked_by}, acc -> picked_by ++ acc end)
 
     players
     |> Enum.map(fn %{name: player} -> player in pickers end)
@@ -79,7 +87,7 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
   def disable_if_already_picked(player, guesses) do
     already_picked? =
       guesses
-      |> Enum.flat_map(fn {_, %{picked_by: picked_by}} -> picked_by end)
+      |> Enum.flat_map(& &1.picked_by)
       |> Enum.member?(player)
 
     if already_picked?, do: @disabled_attribute, else: []

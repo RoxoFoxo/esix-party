@@ -4,6 +4,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
   import CoreWeb.RoomUtils
 
   alias Core.Games.GuessTheTag
+  alias Core.Games.GuessTheTag.Guess
 
   @disabled_attribute [{"disabled", ""}]
 
@@ -14,7 +15,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
       <.simple_form for={@form} id="guess_input" phx-target={@myself} phx-submit="guess_submit">
         <.input
           id="tag_input"
-          field={@form[:guess]}
+          field={@form[:guess_tags]}
           type="text"
           label="Guess five tags from this image!"
           autocomplete="off"
@@ -45,7 +46,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
   @impl true
   def handle_event(
         "guess_submit",
-        %{"guess" => guess},
+        %{"guess_tags" => guess_tags},
         %{
           assigns: %{
             server_pid: server_pid,
@@ -54,7 +55,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
           }
         } = socket
       ) do
-    case validate_guess(guess) do
+    case validate_guess(guess_tags) do
       :invalid ->
         {:noreply, assign(socket, :fail_msg, "It needs to be five tags!")}
 
@@ -82,17 +83,17 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
   end
 
   defp insert_guess(%{guesses: guesses} = game, tags, player_name) do
-    %{game | guesses: Map.put(guesses, player_name, %{tags: tags, picked_by: [], score: nil})}
+    %{game | guesses: [%Guess{guesser: player_name, tags: tags} | guesses]}
   end
 
   defp all_players_guessed?(players, guesses) do
     player_names = Enum.map(players, & &1.name)
-    guessers = Map.keys(guesses)
+    guessers = Enum.map(guesses, & &1.guesser)
 
     Enum.all?(player_names, &(&1 in guessers))
   end
 
   defp disable_if_guessed(current_player, guesses) do
-    if current_player in Map.keys(guesses), do: @disabled_attribute, else: []
+    if current_player in Enum.map(guesses, & &1.guesser), do: @disabled_attribute, else: []
   end
 end
