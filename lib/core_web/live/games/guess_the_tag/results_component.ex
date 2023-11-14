@@ -16,7 +16,7 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
       <% end %>
       <hr />
 
-      <%= for {guesser, %{tags: tags, picked_by: picked_by}}  <- hd(@state.games).guesses do %>
+      <%= for %{guesser: guesser, tags: tags, picked_by: picked_by} <- hd(@state.games).guesses do %>
         <%= guesser %>'s guess <br />
         <.button phx-click="pick" phx-target={@myself} style="width: 200px; text-align: left" disabled>
           <%= for tag <- tags do %>
