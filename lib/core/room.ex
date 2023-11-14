@@ -1,4 +1,4 @@
-defmodule Core.GameRoom do
+defmodule Core.Room do
   @moduledoc false
   use GenServer, restart: :temporary
 
@@ -27,7 +27,7 @@ defmodule Core.GameRoom do
   end
 
   def start_link(name: {_, _, {_, name}} = registry_name) do
-    GenServer.start_link(__MODULE__, %Core.GameRoom{name: name}, name: registry_name)
+    GenServer.start_link(__MODULE__, %__MODULE__{name: name}, name: registry_name)
   end
 
   defp generate_new_name do

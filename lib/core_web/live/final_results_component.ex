@@ -20,8 +20,13 @@ defmodule CoreWeb.FinalResultsComponent do
     """
   end
 
-  def handle_event("new_match", _params, %{assigns: %{server_pid: server_pid}} = socket) do
-    update_state(socket, server_pid, %{status: :lobby, post_urls: []})
+  def handle_event(
+        "new_match",
+        _params,
+        %{assigns: %{server_pid: server_pid, state: %{players: players}}} = socket
+      ) do
+    reset_players = Enum.map(players, &Map.put(&1, :score, 0))
+    update_state(socket, server_pid, %{status: :lobby, post_urls: [], players: reset_players})
   end
 
   def order_by_score(players),

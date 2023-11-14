@@ -1,8 +1,7 @@
 defmodule CoreWeb.HomeLive do
   use CoreWeb, :live_view
 
-  alias Core.GameRoom
-  # alias Core.Player
+  alias Core.Room
 
   @impl true
   def render(assigns) do
@@ -41,7 +40,7 @@ defmodule CoreWeb.HomeLive do
   end
 
   defp new_room do
-    {:ok, pid} = GameRoom.new()
+    {:ok, pid} = Room.new()
 
     GenServer.call(pid, :get_name)
   end
