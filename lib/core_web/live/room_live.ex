@@ -67,11 +67,13 @@ defmodule CoreWeb.RoomLive do
         [] -> :final_results
       end
 
+    timer_ref = unless new_status == :final_results, do: Process.send_after(self(), :timer, 60000)
+
     changes = %{
       games: games,
       status: new_status,
       game_status: nil,
-      timer_ref: Process.send_after(self(), :timer, 60000)
+      timer_ref: timer_ref
     }
 
     update_state(socket, server_pid, changes)

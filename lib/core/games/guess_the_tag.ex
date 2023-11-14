@@ -67,13 +67,7 @@ defmodule Core.Games.GuessTheTag do
   def pick_changes([%{guesses: guesses} = game | tail], players, timer_ref) do
     Process.cancel_timer(timer_ref)
 
-    updated_players =
-      players
-      |> IO.inspect(label: "1")
-      |> award_pickers(guesses)
-      |> IO.inspect(label: "2")
-      |> award_guessers(guesses)
-      |> IO.inspect(label: "3")
+    updated_players = players |> award_pickers(guesses) |> award_guessers(guesses)
 
     %{
       games: [game | tail],
@@ -97,12 +91,12 @@ defmodule Core.Games.GuessTheTag do
   defp award_guessers(players, guesses) do
     for %{name: player_name, score: player_score} = player <- players do
       case Enum.find(guesses, &(&1.guesser == player_name)) do
-        nil ->
-          player
-
         %{picked_by: picked_by} ->
           pick_score = Enum.reduce(picked_by, 0, fn _, acc -> acc + 5 end)
           %{player | score: player_score + pick_score}
+
+        nil ->
+          player
       end
     end
   end
