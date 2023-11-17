@@ -8,16 +8,15 @@ defmodule Core.E621Client do
 
     adapter.get_random_posts(amount, tags)
     |> then(fn {:ok, posts} -> posts end)
-    |> Enum.map(&get_post_info/1)
+    |> Enum.map(&get_post_info(&1, adapter))
   end
 
-  defp get_post_info(post) do
-    tags = remove_bad_tags(post["tags"])
-
+  defp get_post_info(%{"file" => %{"url" => image}, "tags" => tags, "id" => id}, adapter) do
     %{
-      image: post["file"]["url"],
-      source: "https://e621.net/posts/#{post["id"]}",
-      tags: tags
+      image: image,
+      image_binary: adapter.get_img_binary(image),
+      source: "https://e621.net/posts/#{id}",
+      tags: remove_bad_tags(tags)
     }
   end
 

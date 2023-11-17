@@ -13,9 +13,7 @@ defmodule Core.GameSetup do
       |> Enum.map(&flatten_tags/1)
       |> Enum.map(&randomize_game_type/1)
 
-    post_urls =
-      posts
-      |> Enum.map(&Map.delete(&1, :tags))
+    post_urls = Enum.map(posts, &Map.drop(&1, [:tags, :image_binary]))
 
     {games, post_urls}
   end
@@ -25,5 +23,5 @@ defmodule Core.GameSetup do
   end
 
   # this will make more sense in the future, when there are more game types.
-  defp randomize_game_type(post), do: struct(Enum.random(@game_types), post)
+  defp randomize_game_type(post), do: Enum.random(@game_types).new(post)
 end

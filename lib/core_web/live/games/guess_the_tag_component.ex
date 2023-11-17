@@ -15,10 +15,12 @@ defmodule CoreWeb.Games.GuessTheTagComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <img
-        src={hd(@state.games).image}
-        style={if @state.game_status != :results, do: "filter: blur(20px)", else: ""}
-      />
+      <%= if @state.game_status != :results do %>
+        <img src={"data:image/jpeg;base64," <> hd(@state.games).tampered_image} />
+      <% else %>
+        <img src={hd(@state.games).image} />
+      <% end %>
+
       <br />
 
       <.live_component

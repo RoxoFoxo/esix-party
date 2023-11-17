@@ -4,8 +4,22 @@ defmodule Core.Games.GuessTheTag do
   """
 
   alias Core.Games.GuessTheTag.Guess
+  alias Core.Games.GuessTheTag.ImageSetup
 
-  defstruct [:image, :source, :tags, guesses: [], type: :guess_the_tag, censor: "placeholder"]
+  defstruct [
+    :image,
+    :tampered_image,
+    :source,
+    :tags,
+    guesses: [],
+    type: :guess_the_tag
+  ]
+
+  def new(%{image_binary: image_binary} = post) do
+    __MODULE__
+    |> struct(post)
+    |> Map.put(:tampered_image, ImageSetup.edit(image_binary))
+  end
 
   def guess_changes([%{guesses: guesses, tags: game_tags} = game | tail], players, timer_ref) do
     Process.cancel_timer(timer_ref)

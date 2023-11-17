@@ -28,4 +28,9 @@ defmodule Core.E621Client.API do
         {:error, error}
     end
   end
+
+  def get_img_binary(image_url) do
+    {:ok, %{body: img_binary}} = image_url |> URI.encode() |> get()
+    img_binary
+  end
 end
