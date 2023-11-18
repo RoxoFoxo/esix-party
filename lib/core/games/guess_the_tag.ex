@@ -30,6 +30,7 @@ defmodule Core.Games.GuessTheTag do
       game
       |> Map.put(:guesses, updated_guesses)
       |> insert_esix_guess()
+      |> shuffle_guesses()
 
     %{
       game_status: :pick,
@@ -76,6 +77,13 @@ defmodule Core.Games.GuessTheTag do
       game
       | guesses: [%Guess{guesser: "eSix", tags: esix_tags, picked_by: [], score: 25} | guesses]
     }
+  end
+
+  defp shuffle_guesses(%{guesses: guesses} = game) do
+    guesses
+    |> Enum.map(fn %{tags: tags} = guess -> %{guess | tags: Enum.shuffle(tags)} end)
+    |> Enum.shuffle()
+    |> then(&%{game | guesses: &1})
   end
 
   def pick_changes([%{guesses: guesses} = game | tail], players, timer_ref) do

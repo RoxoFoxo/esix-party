@@ -11,7 +11,7 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <%= for %{guesser: guesser, tags: tags} <- hd(@state.games).guesses |> Enum.shuffle() do %>
+      <%= for %{guesser: guesser, tags: tags} <- hd(@state.games).guesses do %>
         <.button
           phx-click="pick"
           phx-target={@myself}
@@ -20,7 +20,7 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
           {disable_if_guesser(@current_player, guesser)}
           {disable_if_already_picked(@current_player, hd(@state.games).guesses)}
         >
-          <%= for tag <- Enum.shuffle(tags) do %>
+          <%= for tag <- tags do %>
             <%= tag %> <br />
           <% end %>
         </.button>
