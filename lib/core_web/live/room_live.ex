@@ -22,6 +22,7 @@ defmodule CoreWeb.RoomLive do
         state={@state}
         server_pid={@server_pid}
         current_player={@current_player}
+        time_remaining={@time_remaining}
       />
     <% end %>
 
@@ -39,7 +40,7 @@ defmodule CoreWeb.RoomLive do
   @impl true
   def mount(%{"name" => room_name}, _session, socket) do
     if RoomRegistry.exists?(room_name) do
-      Phoenix.PubSub.subscribe(Core.PubSub, room_name)
+      if connected?(socket), do: Phoenix.PubSub.subscribe(Core.PubSub, room_name)
 
       server_pid = get_server_pid(room_name)
 
@@ -48,7 +49,8 @@ defmodule CoreWeb.RoomLive do
        |> assign(%{
          server_pid: server_pid,
          state: GenServer.call(server_pid, :get_state),
-         current_player: nil
+         current_player: nil,
+         time_remaining: 0
        })}
     else
       {:ok, redirect_to_home(socket, {:error, "Room with name #{room_name} doesn't exist."})}
@@ -59,7 +61,7 @@ defmodule CoreWeb.RoomLive do
   def handle_event(
         "next_game",
         _params,
-        %{assigns: %{server_pid: server_pid, state: %{games: [_current | games]}}} = socket
+        %{assigns: %{state: %{games: [_current | games]}}} = socket
       ) do
     new_status =
       case games do
@@ -67,16 +69,13 @@ defmodule CoreWeb.RoomLive do
         [] -> :final_results
       end
 
-    timer_ref = unless new_status == :final_results, do: Process.send_after(self(), :timer, 60000)
-
     changes = %{
       games: games,
       status: new_status,
-      game_status: nil,
-      timer_ref: timer_ref
+      game_status: nil
     }
 
-    update_state(socket, server_pid, changes)
+    {:noreply, update_state(socket, changes)}
   end
 
   @impl true
@@ -89,11 +88,37 @@ defmodule CoreWeb.RoomLive do
     {:noreply, assign(socket, assigns)}
   end
 
+  def handle_info({:start_timer, time}, socket) do
+    changes = %{timer_ref: Process.send_after(self(), :timer, time + 1000)}
+    {:noreply, update_state(socket, changes)}
+  end
+
+  def handle_info(:tick, %{assigns: %{state: %{timer_ref: nil}}} = socket) do
+    {:noreply, assign(socket, :time_remaining, 0)}
+  end
+
+  def handle_info(
+        :tick,
+        %{assigns: %{state: %{timer_ref: timer_ref}}} = socket
+      ) do
+    time_remaining =
+      if time = Process.read_timer(timer_ref) do
+        Process.send_after(self(), :tick, 1000)
+
+        time
+        |> div(1000)
+        |> ceil()
+      else
+        0
+      end
+
+    {:noreply, assign(socket, :time_remaining, time_remaining)}
+  end
+
   def handle_info(
         :timer,
         %{
           assigns: %{
-            server_pid: server_pid,
             state: %{
               players: players,
               games: games,
@@ -103,16 +128,14 @@ defmodule CoreWeb.RoomLive do
           }
         } = socket
       ) do
-    IO.inspect(game_status, label: "GAME_STATUS")
-
+    # Timer is cancelled when the owner leaves, so this should be done through GenServer instead
     changes =
       case game_status do
         :guess -> GuessTheTag.guess_changes(games, players, timer_ref)
         :pick -> GuessTheTag.pick_changes(games, players, timer_ref)
       end
-      |> IO.inspect(label: "TIMER")
 
-    update_state(socket, server_pid, changes)
+    {:noreply, update_state(socket, changes)}
   end
 
   @impl true
@@ -120,7 +143,6 @@ defmodule CoreWeb.RoomLive do
         _reason,
         %{
           assigns: %{
-            server_pid: server_pid,
             current_player: current_player,
             state: %{players: players}
           }
@@ -133,7 +155,7 @@ defmodule CoreWeb.RoomLive do
       true -> List.update_at(new_players, -1, &Map.put(&1, :owner?, true))
       false -> new_players
     end
-    |> then(&update_state(socket, server_pid, %{players: &1}))
+    |> then(&update_state(socket, %{players: &1}))
   end
 
   def terminate(_reason, _socket), do: :ok

@@ -57,7 +57,7 @@ defmodule CoreWeb.NameInputComponent do
   def handle_event(
         "name_submit",
         %{"name" => player_name},
-        %{assigns: %{server_pid: server_pid, state: %{players: players}}} = socket
+        %{assigns: %{state: %{players: players}}} = socket
       ) do
     with false <- name_in_use?(player_name, players) && :in_use,
          false <- player_name =~ ~r'^eSix$'i && :esix,
@@ -67,7 +67,7 @@ defmodule CoreWeb.NameInputComponent do
       owner? = players == []
       new_players = [%Player{name: player_name, owner?: owner?} | players]
 
-      update_state(socket, server_pid, %{players: new_players})
+      {:noreply, update_state(socket, %{players: new_players})}
     else
       :in_use ->
         {:noreply, assign(socket, fail_msg: @in_use_msg)}

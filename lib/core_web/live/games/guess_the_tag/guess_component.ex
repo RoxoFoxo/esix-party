@@ -40,7 +40,8 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
     {:ok,
      socket
      |> assign(:fail_msg, nil)
-     |> assign(:form, to_form(%{}))}
+     |> assign(:form, to_form(%{}))
+     |> attach_timer_hook()}
   end
 
   @impl true
@@ -49,7 +50,6 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
         %{"guess_tags" => guess_tags},
         %{
           assigns: %{
-            server_pid: server_pid,
             current_player: current_player,
             state: %{games: [game | tail], players: players, timer_ref: timer_ref}
           }
@@ -69,7 +69,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
             %{games: [updated_game | tail]}
           end
 
-        update_state(socket, server_pid, changes)
+        {:noreply, update_state(socket, changes)}
     end
   end
 

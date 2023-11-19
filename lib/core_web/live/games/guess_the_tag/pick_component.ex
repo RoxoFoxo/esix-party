@@ -32,7 +32,7 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
 
   @impl true
   def mount(socket) do
-    {:ok, socket}
+    {:ok, attach_timer_hook(socket)}
   end
 
   @impl true
@@ -41,7 +41,6 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
         %{"guesser" => guesser},
         %{
           assigns: %{
-            server_pid: server_pid,
             current_player: current_player,
             state: %{
               games: [%{guesses: guesses} = game | tail],
@@ -69,7 +68,7 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
         %{games: [updated_game | tail]}
       end
 
-    update_state(socket, server_pid, changes)
+    {:noreply, update_state(socket, changes)}
   end
 
   defp all_players_picked?(players, %{guesses: guesses}) do

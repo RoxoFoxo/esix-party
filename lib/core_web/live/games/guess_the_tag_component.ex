@@ -17,6 +17,7 @@ defmodule CoreWeb.Games.GuessTheTagComponent do
     <div>
       <%= if @state.game_status != :results do %>
         <img src={"data:image/jpeg;base64," <> hd(@state.games).tampered_image} />
+        <br />Time remaining: <%= @time_remaining %>
       <% else %>
         <img src={hd(@state.games).image} />
       <% end %>
@@ -35,16 +36,15 @@ defmodule CoreWeb.Games.GuessTheTagComponent do
   end
 
   @impl true
-  def update(
-        %{
-          server_pid: server_pid,
-          state: %{game_status: game_status}
-        } = assigns,
-        socket
-      ) do
-    unless game_status, do: update_state(socket, server_pid, %{game_status: :guess})
-
-    {:ok, assign(socket, assigns)}
+  def update(%{state: %{game_status: game_status}} = assigns, socket) do
+    if game_status do
+      {:ok, assign(socket, assigns)}
+    else
+      {:ok,
+       socket
+       |> assign(assigns)
+       |> update_state(%{game_status: :guess})}
+    end
   end
 
   def fetch_component(nil), do: @components[:guess]

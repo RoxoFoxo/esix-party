@@ -16,7 +16,13 @@ defmodule CoreWeb.FinalResultsComponent do
         <%= player.name <> " " <> to_string(player.score) %> <br />
       <% end %>
 
-      <.button phx-click="new_match" phx-target={@myself}>New match</.button>
+      <.button
+        phx-click="new_match"
+        phx-target={@myself}
+        {hide_if_not_owner(@current_player, @players)}
+      >
+        New match
+      </.button>
     </div>
     """
   end
@@ -24,10 +30,15 @@ defmodule CoreWeb.FinalResultsComponent do
   def handle_event(
         "new_match",
         _params,
-        %{assigns: %{server_pid: server_pid, state: %{players: players}}} = socket
+        %{assigns: %{state: %{players: players}}} = socket
       ) do
-    reset_players = Enum.map(players, &Map.put(&1, :score, 0))
-    update_state(socket, server_pid, %{status: :lobby, post_urls: [], players: reset_players})
+    changes = %{
+      status: :lobby,
+      post_urls: [],
+      players: Enum.map(players, &Map.put(&1, :score, 0))
+    }
+
+    {:noreply, update_state(socket, changes)}
   end
 
   def order_by_score(players),

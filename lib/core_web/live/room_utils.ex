@@ -3,13 +3,13 @@ defmodule CoreWeb.RoomUtils do
 
   alias Phoenix.LiveView
 
-  def update_state(socket, server_pid, changes) do
+  def update_state(%{assigns: %{server_pid: server_pid}} = socket, changes) do
     if Process.alive?(server_pid) do
       GenServer.call(server_pid, {:update_state, changes})
 
-      {:noreply, socket}
+      socket
     else
-      {:noreply, redirect_to_home(socket, {:error, @inactive_msg})}
+      redirect_to_home(socket, {:error, @inactive_msg})
     end
   end
 
@@ -17,6 +17,39 @@ defmodule CoreWeb.RoomUtils do
     socket
     |> LiveView.put_flash(kind, msg)
     |> LiveView.redirect(to: "/")
+  end
+
+  def attach_timer_hook(socket) do
+    LiveView.attach_hook(socket, :start_timer, :after_render, &start_timer_hook/1)
+  end
+
+  defp start_timer_hook(
+         %{
+           assigns: %{
+             current_player: current_player,
+             state: %{
+               players: players,
+               status: status,
+               game_status: game_status,
+               timer_ref: timer_ref
+             }
+           }
+         } = socket
+       ) do
+    with true <- Enum.find_value(players, &if(&1.name == current_player, do: &1.owner?)),
+         false <- timer_ref != nil and Process.read_timer(timer_ref) do
+      time =
+        case {status, game_status} do
+          {:guess_the_tag, :pick} -> 30000
+          {:guess_the_tag, _} -> 60000
+        end
+
+      send(self(), {:start_timer, time})
+    end
+
+    Process.send_after(self(), :tick, 1000)
+
+    socket |> LiveView.detach_hook(:start_timer, :after_render)
   end
 
   def hide_if_not_owner(nil, _players), do: [{"hidden", ""}]

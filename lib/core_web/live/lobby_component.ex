@@ -64,7 +64,7 @@ defmodule CoreWeb.LobbyComponent do
           "amount_of_rounds" => amount_of_rounds,
           "blacklist" => blacklist
         } = params,
-        %{assigns: %{server_pid: server_pid}} = socket
+        socket
       ) do
     formatted_blacklist =
       blacklist
@@ -90,11 +90,10 @@ defmodule CoreWeb.LobbyComponent do
       games: games,
       post_urls: post_urls,
       status: game.type,
-      blacklist: blacklist,
-      timer_ref: Process.send_after(self(), :timer, 60000)
+      blacklist: blacklist
     }
 
-    update_state(socket, server_pid, changes)
+    {:noreply, update_state(socket, changes)}
   end
 
   def check_rating({_rating, "false"}), do: ""
