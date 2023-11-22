@@ -3,6 +3,7 @@ defmodule CoreWeb.FinalResultsComponent do
 
   import CoreWeb.RoomUtils
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div>
@@ -19,7 +20,7 @@ defmodule CoreWeb.FinalResultsComponent do
       <.button
         phx-click="new_match"
         phx-target={@myself}
-        {hide_if_not_owner(@current_player, @players)}
+        {hide_if_not_owner(@current_player, @state.players)}
       >
         New match
       </.button>
@@ -27,6 +28,7 @@ defmodule CoreWeb.FinalResultsComponent do
     """
   end
 
+  @impl true
   def handle_event(
         "new_match",
         _params,
@@ -41,6 +43,6 @@ defmodule CoreWeb.FinalResultsComponent do
     {:noreply, update_state(socket, changes)}
   end
 
-  def order_by_score(players),
+  defp order_by_score(players),
     do: Enum.sort(players, fn %{score: score}, other -> score >= other end)
 end

@@ -26,11 +26,10 @@ defmodule CoreWeb.RoomUtils do
   defp start_timer_hook(
          %{
            assigns: %{
+             server_pid: server_pid,
              current_player: current_player,
              state: %{
                players: players,
-               status: status,
-               game_status: game_status,
                timer_ref: timer_ref
              }
            }
@@ -38,13 +37,7 @@ defmodule CoreWeb.RoomUtils do
        ) do
     with true <- Enum.find_value(players, &if(&1.name == current_player, do: &1.owner?)),
          false <- timer_ref != nil and Process.read_timer(timer_ref) do
-      time =
-        case {status, game_status} do
-          {:guess_the_tag, :pick} -> 30000
-          {:guess_the_tag, _} -> 60000
-        end
-
-      send(self(), {:start_timer, time})
+      GenServer.cast(server_pid, :start_timer)
     end
 
     Process.send_after(self(), :tick, 1000)

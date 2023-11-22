@@ -18,6 +18,7 @@ defmodule Core.Room do
   @fifteen_minutes 900_000
 
   alias Core.RoomRegistry
+  alias Core.Games.GuessTheTag
 
   def new do
     DynamicSupervisor.start_child(
@@ -57,14 +58,51 @@ defmodule Core.Room do
     {:reply, state, state, @fifteen_minutes}
   end
 
-  def handle_call({:update_state, changes}, _from, state) do
+  def handle_call({:update_state, changes}, _from, %{name: name} = state) do
     new_state = Map.merge(state, changes)
 
-    broadcast({:new_state, new_state}, state.name)
+    broadcast({:new_state, new_state}, name)
     {:reply, new_state, new_state, @fifteen_minutes}
   end
 
   @impl true
+  def handle_cast(
+        :start_timer,
+        %{status: status, game_status: game_status, name: name} = state
+      ) do
+    time =
+      case {status, game_status} do
+        {:guess_the_tag, :pick} -> 30000
+        {:guess_the_tag, _} -> 60000
+      end
+
+    new_state = %{state | timer_ref: Process.send_after(self(), :timer, time)}
+    broadcast({:new_state, new_state}, name)
+    {:noreply, new_state}
+  end
+
+  @impl true
+  def handle_info(
+        :timer,
+        %{
+          name: name,
+          players: players,
+          games: games,
+          game_status: game_status,
+          timer_ref: timer_ref
+        } = state
+      ) do
+    changes =
+      case game_status do
+        :guess -> GuessTheTag.guess_changes(games, players, timer_ref)
+        :pick -> GuessTheTag.pick_changes(games, players, timer_ref)
+      end
+
+    new_state = Map.merge(state, changes)
+    broadcast({:new_state, new_state}, name)
+    {:noreply, new_state}
+  end
+
   def handle_info(:timeout, state) do
     {:stop, :timeout, state}
   end

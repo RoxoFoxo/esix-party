@@ -4,7 +4,6 @@ defmodule CoreWeb.RoomLive do
   import CoreWeb.RoomUtils
 
   alias Core.RoomRegistry
-  alias Core.Games.GuessTheTag
 
   @components %{
     lobby: CoreWeb.LobbyComponent,
@@ -88,11 +87,6 @@ defmodule CoreWeb.RoomLive do
     {:noreply, assign(socket, assigns)}
   end
 
-  def handle_info({:start_timer, time}, socket) do
-    changes = %{timer_ref: Process.send_after(self(), :timer, time + 1000)}
-    {:noreply, update_state(socket, changes)}
-  end
-
   def handle_info(:tick, %{assigns: %{state: %{timer_ref: nil}}} = socket) do
     {:noreply, assign(socket, :time_remaining, 0)}
   end
@@ -113,29 +107,6 @@ defmodule CoreWeb.RoomLive do
       end
 
     {:noreply, assign(socket, :time_remaining, time_remaining)}
-  end
-
-  def handle_info(
-        :timer,
-        %{
-          assigns: %{
-            state: %{
-              players: players,
-              games: games,
-              game_status: game_status,
-              timer_ref: timer_ref
-            }
-          }
-        } = socket
-      ) do
-    # Timer is cancelled when the owner leaves, so this should be done through GenServer instead
-    changes =
-      case game_status do
-        :guess -> GuessTheTag.guess_changes(games, players, timer_ref)
-        :pick -> GuessTheTag.pick_changes(games, players, timer_ref)
-      end
-
-    {:noreply, update_state(socket, changes)}
   end
 
   @impl true
