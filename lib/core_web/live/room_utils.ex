@@ -35,7 +35,7 @@ defmodule CoreWeb.RoomUtils do
            }
          } = socket
        ) do
-    with true <- Enum.find_value(players, &if(&1.name == current_player, do: &1.owner?)),
+    with true <- is_owner?(current_player, players),
          false <- timer_ref != nil and Process.read_timer(timer_ref) do
       GenServer.cast(server_pid, :start_timer)
     end
@@ -55,8 +55,8 @@ defmodule CoreWeb.RoomUtils do
   end
 
   def is_owner?(current_player, players) do
-    case Enum.find(players, &(&1.name == current_player)) do
-      %{owner?: owner?} -> owner?
+    case Enum.find_value(players, &if(&1.name == current_player, do: &1.owner?)) do
+      true -> true
       _ -> false
     end
   end
