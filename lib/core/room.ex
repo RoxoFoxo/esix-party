@@ -72,8 +72,8 @@ defmodule Core.Room do
       ) do
     time =
       case {status, game_status} do
-        {:guess_the_tag, :pick} -> 30000
-        {:guess_the_tag, _} -> 60000
+        {:guess_the_tag, :pick} -> 31000
+        {:guess_the_tag, _} -> 61000
       end
 
     new_state = %{state | timer_ref: Process.send_after(self(), :timer, time)}
@@ -112,7 +112,5 @@ defmodule Core.Room do
     {:shutdown, state}
   end
 
-  defp broadcast(msg, name) do
-    Phoenix.PubSub.broadcast(Core.PubSub, name, msg)
-  end
+  defp broadcast(msg, name), do: Phoenix.PubSub.broadcast(Core.PubSub, name, msg)
 end

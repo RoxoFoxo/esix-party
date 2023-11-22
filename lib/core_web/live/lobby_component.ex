@@ -64,36 +64,40 @@ defmodule CoreWeb.LobbyComponent do
           "amount_of_rounds" => amount_of_rounds,
           "blacklist" => blacklist
         } = params,
-        socket
+        %{assigns: %{server_pid: server_pid}} = socket
       ) do
-    formatted_blacklist =
-      blacklist
-      |> String.split(" ", trim: true)
-      |> Enum.map(&("-" <> &1))
+    if Process.alive?(server_pid) do
+      formatted_blacklist =
+        blacklist
+        |> String.split(" ", trim: true)
+        |> Enum.map(&("-" <> &1))
 
-    ratings =
-      params
-      |> Map.take(["safe?", "questionable?", "explicit?"])
-      |> Enum.map(&check_rating/1)
-      |> Enum.reject(&(&1 == ""))
+      ratings =
+        params
+        |> Map.take(["safe?", "questionable?", "explicit?"])
+        |> Enum.map(&check_rating/1)
+        |> Enum.reject(&(&1 == ""))
 
-    tags =
-      (formatted_blacklist ++ ratings)
-      |> Enum.join("+")
+      tags =
+        (formatted_blacklist ++ ratings)
+        |> Enum.join("+")
 
-    {[game | _] = games, post_urls} =
-      amount_of_rounds
-      |> E621Client.get_random_posts(tags)
-      |> GameSetup.generate_into_games()
+      {[game | _] = games, post_urls} =
+        amount_of_rounds
+        |> E621Client.get_random_posts(tags)
+        |> GameSetup.generate_into_games()
 
-    changes = %{
-      games: games,
-      post_urls: post_urls,
-      status: game.type,
-      blacklist: blacklist
-    }
+      changes = %{
+        games: games,
+        post_urls: post_urls,
+        status: game.type,
+        blacklist: blacklist
+      }
 
-    {:noreply, update_state(socket, changes)}
+      {:noreply, update_state(socket, changes)}
+    else
+      {:noreply, update_state(socket)}
+    end
   end
 
   def check_rating({_rating, "false"}), do: ""

@@ -3,7 +3,7 @@ defmodule CoreWeb.RoomUtils do
 
   alias Phoenix.LiveView
 
-  def update_state(%{assigns: %{server_pid: server_pid}} = socket, changes) do
+  def update_state(%{assigns: %{server_pid: server_pid}} = socket, changes \\ %{}) do
     if Process.alive?(server_pid) do
       GenServer.call(server_pid, {:update_state, changes})
 

@@ -36,7 +36,6 @@ defmodule Core.Games.GuessTheTag do
       game_status: :pick,
       games: [updated_game | tail],
       players: award_guessers_for_guessing(players, updated_guesses)
-      # timer_ref: send(self(), :start_timer, 30000)
     }
   end
 
