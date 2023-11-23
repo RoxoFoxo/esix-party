@@ -1,5 +1,7 @@
 defmodule Core.Games.GuessTheTag.ImageSetup do
-  @tampering_methods ~w[pixelate ripple random_crop ring]a
+  require Integer
+
+  @tampering_methods ~w[pixelate ripple random_crop ring checkers]a
 
   def edit(image_binary) do
     image_binary
@@ -32,6 +34,48 @@ defmodule Core.Games.GuessTheTag.ImageSetup do
     img
     |> Image.Draw.rect!(left, top, width, height, stroke_width: stroke_width, fill: false)
     |> thumbnail!
+  end
+
+  defp tamper_img(img, :checkers) do
+    default_width = Image.width(img)
+    default_height = Image.height(img)
+
+    square_size =
+      case default_width >= default_height do
+        true -> (div(default_width, 1000) + 1) * 150
+        false -> (div(default_height, 1000) + 1) * 150
+      end
+
+    squares_horizontal = div(default_width, square_size) + 1
+    squares_vertical = div(default_height, square_size) + 1
+
+    img
+    |> checkers(square_size, squares_horizontal, squares_vertical)
+    |> thumbnail!
+  end
+
+  defp checkers(img, square_size, squares_horizontal, squares_vertical) do
+    pattern = Enum.random([:pattern1, :pattern2])
+
+    for h <- 0..squares_horizontal, v <- 0..squares_vertical do
+      if follows_pattern?(h, v, pattern) do
+        {square_size * h, square_size * v}
+      end
+    end
+    |> Enum.reject(&(&1 == nil))
+    |> Enum.reduce(img, fn {left, top}, acc ->
+      Image.Draw.rect!(acc, left, top, square_size, square_size)
+    end)
+  end
+
+  defp follows_pattern?(h, v, pattern) do
+    case pattern do
+      :pattern1 ->
+        (Integer.is_even(h) and Integer.is_odd(v)) or (Integer.is_even(v) and Integer.is_odd(h))
+
+      :pattern2 ->
+        (Integer.is_even(h) and Integer.is_even(v)) or (Integer.is_odd(v) and Integer.is_odd(h))
+    end
   end
 
   defp thumbnail!(img), do: Image.thumbnail!(img, 1080, resize: :down)
