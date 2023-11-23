@@ -3,7 +3,15 @@ defmodule Core.Games.GuessTheTag.ImageSetup do
 
   @tampering_methods ~w[pixelate ripple random_crop ring checkers]a
 
-  def edit(image_binary) do
+  def normal_to_memory(image_binary) do
+    image_binary
+    |> Image.from_binary!()
+    |> thumbnail!()
+    |> Image.write!(:memory, suffix: ".webp")
+    |> Base.encode64()
+  end
+
+  def tamper_to_memory(image_binary) do
     image_binary
     |> Image.from_binary!()
     |> tamper_img(Enum.random(@tampering_methods))

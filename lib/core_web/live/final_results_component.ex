@@ -8,7 +8,9 @@ defmodule CoreWeb.FinalResultsComponent do
     ~H"""
     <div>
       <%= for post <- @state.post_urls do %>
-        <a href={post.source} target="_blank"><img src={post.image} /></a>
+        <a href={post.source} target="_blank">
+          <img src={"data:image/webp;base64," <> post.image} />
+        </a>
         <br />
       <% end %>
 

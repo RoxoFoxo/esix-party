@@ -16,10 +16,10 @@ defmodule CoreWeb.Games.GuessTheTagComponent do
     ~H"""
     <div>
       <%= if @state.game_status != :results do %>
-        <img src={"data:image/jpeg;base64," <> hd(@state.games).tampered_image} />
+        <img src={"data:image/webp;base64," <> hd(@state.games).tampered_image} />
         <br />Time remaining: <%= @time_remaining %>
       <% else %>
-        <img src={hd(@state.games).image} />
+        <img src={"data:image/webp;base64," <> hd(@state.games).image} />
       <% end %>
 
       <br />

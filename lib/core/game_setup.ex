@@ -2,18 +2,20 @@ defmodule Core.GameSetup do
   @moduledoc false
 
   alias Core.Games.GuessTheTag
+  alias Core.Games.GuessTheTag.ImageSetup
 
   @game_types [GuessTheTag]
-  # TODO: create and add censors
-  # @censors ["placeholder"]
 
   def generate_into_games(posts) do
     games =
       posts
+      |> Enum.map(&Map.put(&1, :image, ImageSetup.normal_to_memory(&1.image_binary)))
       |> Enum.map(&flatten_tags/1)
       |> Enum.map(&randomize_game_type/1)
 
-    post_urls = Enum.map(posts, &Map.drop(&1, [:tags, :image_binary]))
+    post_urls =
+      games
+      |> Enum.map(&Map.take(&1, [:image, :source]))
 
     {games, post_urls}
   end

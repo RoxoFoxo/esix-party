@@ -18,7 +18,7 @@ defmodule Core.Games.GuessTheTag do
   def new(%{image_binary: image_binary} = post) do
     __MODULE__
     |> struct(post)
-    |> Map.put(:tampered_image, ImageSetup.edit(image_binary))
+    |> Map.put(:tampered_image, ImageSetup.tamper_to_memory(image_binary))
   end
 
   def guess_changes([%{guesses: guesses, tags: game_tags} = game | tail], players, timer_ref) do

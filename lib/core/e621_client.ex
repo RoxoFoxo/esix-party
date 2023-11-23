@@ -13,7 +13,6 @@ defmodule Core.E621Client do
 
   defp get_post_info(%{"file" => %{"url" => image}, "tags" => tags, "id" => id}, adapter) do
     %{
-      image: image,
       image_binary: adapter.get_img_binary(image),
       source: "https://e621.net/posts/#{id}",
       tags: remove_bad_tags(tags)
