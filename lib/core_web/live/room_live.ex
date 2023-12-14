@@ -14,6 +14,10 @@ defmodule CoreWeb.RoomLive do
   @impl true
   def render(assigns) do
     ~H"""
+    <%= if @state.status != :lobby do %>
+      <p title={add_default_blacklist(@state.blacklist)}>Hover to see blacklist</p>
+    <% end %>
+
     <%= if @state do %>
       <.live_component
         module={fetch_component(@state.status)}
@@ -130,6 +134,8 @@ defmodule CoreWeb.RoomLive do
   end
 
   def terminate(_reason, _socket), do: :ok
+
+  defp add_default_blacklist(blacklist), do: blacklist <> "gore scat watersports young loli shota"
 
   defp get_server_pid(name), do: GenServer.whereis({:via, Registry, {RoomRegistry, name}})
 
