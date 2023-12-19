@@ -16,7 +16,7 @@ defmodule CoreWeb.FinalResultsComponent do
 
       <p>Results!</p>
       <%= for player <- order_by_score(@state.players) do %>
-        <%= player.name <> " " <> to_string(player.score) %> <br />
+        <p><span class="text-yellow-500"><%= player.name %></span> <%= to_string(player.score) %></p>
       <% end %>
 
       <.button

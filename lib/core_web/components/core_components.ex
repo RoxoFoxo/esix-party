@@ -50,7 +50,11 @@ defmodule CoreWeb.CoreComponents do
       phx-remove={hide_modal(@id)}
       class="relative z-50 hidden"
     >
-      <div id={"#{@id}-bg"} class="bg-blue-50/30 fixed inset-0 transition-opacity" aria-hidden="true" />
+      <div
+        id={"#{@id}-bg"}
+        class="bg-black opacity-50 fixed inset-0 transition-opacity"
+        aria-hidden="true"
+      />
       <div
         class="fixed inset-0 overflow-y-auto"
         aria-labelledby={"#{@id}-title"}
@@ -64,8 +68,7 @@ defmodule CoreWeb.CoreComponents do
             <.focus_wrap
               id={"#{@id}-container"}
               phx-key="escape"
-              class="shadow-black ring-black relative hidden rounded-2xl p-14 shadow-lg ring-1 transition"
-              style="background-color: #012e56"
+              class="bg-[#012e56] shadow-black ring-black relative hidden rounded-2xl p-14 shadow-lg ring-1 transition"
             >
               <div id={"#{@id}-content"}>
                 <%= render_slot(@inner_block) %>
@@ -345,7 +348,7 @@ defmodule CoreWeb.CoreComponents do
         id={@id}
         value={Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
+          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6 disabled:bg-neutral-700",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400",
           @errors == [] && "border-zinc-300 focus:border-zinc-400",
           @errors != [] && "border-rose-400 focus:border-rose-400"

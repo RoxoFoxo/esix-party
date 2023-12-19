@@ -11,10 +11,14 @@ defmodule CoreWeb.LobbyComponent do
     ~H"""
     <div>
       <p>Room name: <%= @state.name %></p>
+      <br />
       <p>Players:</p>
-      <%= for player <- Enum.reverse(@state.players) do %>
-        <%= player.name %> <br />
-      <% end %>
+      <div class="text-yellow-500">
+        <%= for player <- Enum.reverse(@state.players) do %>
+            <%= player.name %>
+          <br />
+        <% end %>
+      </div>
 
       <%= if is_owner?(@current_player, @state.players) do %>
         <.simple_form for={@form} id="game_params" phx-target={@myself} phx-submit="start">

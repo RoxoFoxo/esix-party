@@ -11,6 +11,8 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
   def render(assigns) do
     ~H"""
     <div>
+      <p>Pick the guess that sounds the most legit!</p>
+      <br />
       <%= for %{guesser: guesser, tags: tags} <- hd(@state.games).guesses do %>
         <.button
           phx-click="pick"

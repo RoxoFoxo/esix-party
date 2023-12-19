@@ -26,7 +26,7 @@ defmodule CoreWeb.NameInputComponent do
             type="text"
             autocomplete="off"
             maxlength="12"
-            label="Enter a Username:"
+              label="Enter an username:"
           />
           <:actions>
             <.button>Submit</.button>
