@@ -7,7 +7,7 @@ defmodule Core.E621Client.API do
   require Logger
 
   plug(Tesla.Middleware.BaseUrl, "https://e621.net")
-  plug(Tesla.Middleware.Headers, [{"user-agent", "guess-the-tag/1.0"}])
+  plug(Tesla.Middleware.Headers, [{"user-agent", "esix-party/1.0"}])
   plug(Tesla.Middleware.JSON)
 
   @default_tags ~w[ order:random -animated -gore -scat -watersports -young -loli -shota ]
