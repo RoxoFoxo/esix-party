@@ -6,7 +6,7 @@ defmodule Core.Games.GuessTheTag.ImageSetup do
   def normal_to_memory(image_binary) do
     image_binary
     |> Image.from_binary!()
-    |> thumbnail!()
+    |> resize_img
     |> Image.write!(:memory, suffix: ".webp")
     |> Base.encode64()
   end
@@ -20,46 +20,51 @@ defmodule Core.Games.GuessTheTag.ImageSetup do
   end
 
   defp tamper_img(img, :pixelate),
-    do: img |> thumbnail! |> Image.pixelate!(0.07)
+    do: img |> resize_img |> Image.pixelate!(0.07)
 
   defp tamper_img(img, :ripple),
-    do: img |> thumbnail! |> Image.ripple!()
+    do: img |> resize_img |> Image.ripple!()
 
   # This being 75 gave me an error once, so I changed both to 74.
   defp tamper_img(img, :random_crop),
-    do: img |> Image.crop!(random_percent(74), random_percent(74), 0.25, 0.25) |> thumbnail!
+    do: img |> Image.crop!(random_percent(74), random_percent(74), 0.25, 0.25) |> resize_img
 
   defp tamper_img(img, :ring) do
-    default_width = Image.width(img)
-    default_height = Image.height(img)
+    shape = {width, height, _} = Image.shape(img)
 
-    left = div(default_width, 20)
-    top = div(default_height, 20)
-    width = default_width - left * 2
-    height = default_height - top * 2
-    stroke_width = div(default_width, 4)
+    left = div(width, 20)
+    top = div(height, 20)
+    rect_width = width - left * 2
+    rect_height = height - top * 2
+
+    stroke_width =
+      shape
+      |> get_smaller_dimension()
+      |> div(4)
 
     img
-    |> Image.Draw.rect!(left, top, width, height, stroke_width: stroke_width, fill: false)
-    |> thumbnail!
+    |> Image.Draw.rect!(left, top, rect_width, rect_height,
+      stroke_width: stroke_width,
+      fill: false
+    )
+    |> resize_img
   end
 
   defp tamper_img(img, :checkers) do
-    default_width = Image.width(img)
-    default_height = Image.height(img)
+    shape = {width, height, _} = Image.shape(img)
 
     square_size =
-      case default_width >= default_height do
-        true -> (div(default_width, 1000) + 1) * 150
-        false -> (div(default_height, 1000) + 1) * 150
-      end
+      shape
+      |> get_smaller_dimension()
+      |> div(1000)
+      |> then(&((&1 + 1) * 150))
 
-    squares_horizontal = div(default_width, square_size) + 1
-    squares_vertical = div(default_height, square_size) + 1
+    squares_horizontal = div(width, square_size) + 1
+    squares_vertical = div(height, square_size) + 1
 
     img
     |> checkers(square_size, squares_horizontal, squares_vertical)
-    |> thumbnail!
+    |> resize_img
   end
 
   defp checkers(img, square_size, squares_horizontal, squares_vertical) do
@@ -86,7 +91,10 @@ defmodule Core.Games.GuessTheTag.ImageSetup do
     end
   end
 
-  defp thumbnail!(img), do: Image.thumbnail!(img, 1080, resize: :down)
+  defp get_smaller_dimension({width, height, _}) when width <= height, do: width
+  defp get_smaller_dimension({width, height, _}) when width > height, do: height
+
+  defp resize_img(img), do: Image.thumbnail!(img, 1080, resize: :down)
 
   defp random_percent(max), do: 0..max |> Enum.random() |> then(&(&1 * 0.01)) |> Float.round(2)
 end
