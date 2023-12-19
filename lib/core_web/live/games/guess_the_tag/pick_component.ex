@@ -13,21 +13,27 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
     <div>
       <p>Pick the guess that sounds the most legit!</p>
       <br />
-      <%= for %{guesser: guesser, tags: tags} <- hd(@state.games).guesses do %>
-        <.button
-          phx-click="pick"
-          phx-target={@myself}
-          phx-value-guesser={guesser}
-          style="width: 200px; text-align: left"
-          {disable_if_guesser(@current_player, guesser)}
-          {disable_if_already_picked(@current_player, hd(@state.games).guesses)}
-        >
-          <%= for tag <- tags do %>
-            <%= tag %> <br />
+      <table>
+        <%= for %{guesser: guesser, tags: tags} <- hd(@state.games).guesses do %>
+          <%= if add_table_row?(hd(@state.games).guesses, guesser) do %>
+            <tr />
           <% end %>
-        </.button>
-        <hr />
-      <% end %>
+          <td>
+            <.button
+              phx-click="pick"
+              phx-target={@myself}
+              phx-value-guesser={guesser}
+              style="width: 200px; text-align: left"
+              {disable_if_guesser(@current_player, guesser)}
+              {disable_if_already_picked(@current_player, hd(@state.games).guesses)}
+            >
+              <%= for tag <- tags do %>
+                <%= tag %> <br />
+              <% end %>
+            </.button>
+          </td>
+        <% end %>
+      </table>
     </div>
     """
   end
@@ -92,5 +98,12 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
       |> Enum.member?(player)
 
     if already_picked?, do: @disabled_attribute, else: []
+  end
+
+  defp add_table_row?(guesses, guesser) do
+    case Enum.find_index(guesses, &(&1.guesser == guesser)) do
+      0 -> false
+      index -> rem(index, 3) == 0
+    end
   end
 end
