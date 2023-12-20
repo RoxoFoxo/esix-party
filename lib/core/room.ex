@@ -108,7 +108,8 @@ defmodule Core.Room do
   end
 
   @impl true
-  def terminate(:timeout, state) do
+  def terminate(:timeout, %{name: name} = state) do
+    broadcast(:redirect_home, name)
     {:shutdown, state}
   end
 

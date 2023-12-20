@@ -87,6 +87,10 @@ defmodule CoreWeb.RoomLive do
     |> IO.inspect()
   end
 
+  def handle_info(:redirect_home, socket) do
+    {:noreply, redirect_to_home(socket)}
+  end
+
   def handle_info({:name_submit, assigns}, socket) do
     {:noreply, assign(socket, assigns)}
   end

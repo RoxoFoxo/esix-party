@@ -9,11 +9,11 @@ defmodule CoreWeb.RoomUtils do
 
       socket
     else
-      redirect_to_home(socket, {:error, @inactive_msg})
+      redirect_to_home(socket)
     end
   end
 
-  def redirect_to_home(socket, {kind, msg}) do
+  def redirect_to_home(socket, {kind, msg} \\ {:error, @inactive_msg}) do
     socket
     |> LiveView.put_flash(kind, msg)
     |> LiveView.redirect(to: "/")
