@@ -19,6 +19,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
           type="text"
           label="Guess five tags from this image!"
           autocomplete="off"
+          value={@guess}
           autofocus
           {disable_if_guessed(@current_player, hd(@state.games).guesses)}
         />
@@ -39,6 +40,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
   def mount(socket) do
     {:ok,
      socket
+     |> assign(:guess, "")
      |> assign(:fail_msg, nil)
      |> assign(:form, to_form(%{}))
      |> attach_timer_hook()}
@@ -57,7 +59,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
       ) do
     case validate_guess(guess_tags) do
       :invalid ->
-        {:noreply, assign(socket, :fail_msg, "It needs to be five tags!")}
+        {:noreply, assign(socket, %{guess: guess_tags, fail_msg: "It needs to be five tags!"})}
 
       tags ->
         updated_game = insert_guess(game, tags, current_player)
@@ -69,7 +71,7 @@ defmodule CoreWeb.Games.GuessTheTag.GuessComponent do
             %{games: [updated_game | tail]}
           end
 
-        {:noreply, update_state(socket, changes)}
+        {:noreply, socket |> assign(%{guess: guess_tags, fail_msg: nil}) |> update_state(changes)}
     end
   end
 
