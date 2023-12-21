@@ -99,11 +99,4 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
 
     if already_picked?, do: @disabled_attribute, else: []
   end
-
-  defp add_table_row?(guesses, guesser) do
-    case Enum.find_index(guesses, &(&1.guesser == guesser)) do
-      0 -> false
-      index -> rem(index, 3) == 0
-    end
-  end
 end

@@ -60,4 +60,11 @@ defmodule CoreWeb.RoomUtils do
       _ -> false
     end
   end
+
+  def add_table_row?(guesses, guesser) do
+    case Enum.find_index(guesses, &(&1.guesser == guesser)) do
+      0 -> false
+      index -> rem(index, 3) == 0
+    end
+  end
 end
