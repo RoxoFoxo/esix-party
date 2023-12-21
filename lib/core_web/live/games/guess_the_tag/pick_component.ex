@@ -27,7 +27,7 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
               {disable_if_guesser(@current_player, guesser)}
               {disable_if_already_picked(@current_player, hd(@state.games).guesses)}
             >
-              <%= for tag <- tags do %>
+              <%= for {tag, _} <- tags do %>
                 <%= tag %> <br />
               <% end %>
             </.button>

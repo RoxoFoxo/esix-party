@@ -46,17 +46,21 @@ defmodule Core.Games.GuessTheTag do
       |> List.flatten()
 
     for %{tags: tags} = guess <- guesses do
-      guess_score =
+      tag_tuples =
         tags
         |> Enum.map(&String.downcase/1)
         |> Enum.uniq()
-        |> Enum.filter(&(&1 in game_tags))
-        |> Enum.map(fn tag -> Enum.count(all_guessed_tags, &(&1 == tag)) end)
+        |> Enum.map(fn tag -> {tag, tag in game_tags} end)
+
+      guess_score =
+        tag_tuples
+        |> Enum.filter(fn {_, correct?} -> correct? end)
+        |> Enum.map(fn {tag, true} -> Enum.count(all_guessed_tags, &(&1 == tag)) end)
         |> Enum.map(&(6 - &1))
         |> Enum.reject(&(&1 < 0))
         |> Enum.sum()
 
-      %{guess | score: guess_score}
+      %{guess | score: guess_score, tags: tag_tuples}
     end
   end
 
@@ -70,7 +74,7 @@ defmodule Core.Games.GuessTheTag do
   end
 
   defp insert_esix_guess(%{tags: game_tags, guesses: guesses} = game) do
-    esix_tags = Enum.take_random(game_tags, 5)
+    esix_tags = game_tags |> Enum.take_random(5) |> Enum.map(&{&1, true})
 
     %{
       game

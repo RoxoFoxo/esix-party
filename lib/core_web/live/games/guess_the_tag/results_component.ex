@@ -19,8 +19,8 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
       <%= for %{guesser: guesser, tags: tags, picked_by: picked_by} <- hd(@state.games).guesses do %>
         <p><span class="text-yellow-500"><%= guesser %>'s</span> guess</p>
         <.button phx-click="pick" phx-target={@myself} style="width: 200px; text-align: left" disabled>
-          <%= for tag <- tags do %>
-            <%= tag %> <br />
+          <%= for {tag, correct?} <- tags do %>
+            <span class={class_color(correct?)}><%= tag %></span> <br />
           <% end %>
         </.button>
         <p>
@@ -40,4 +40,7 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
     </div>
     """
   end
+
+  def class_color(true), do: "text-green-500"
+  def class_color(false), do: "text-red-500"
 end
