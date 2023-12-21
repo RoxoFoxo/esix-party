@@ -16,20 +16,26 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
       <% end %>
       <hr />
 
-      <%= for %{guesser: guesser, tags: tags, picked_by: picked_by} <- hd(@state.games).guesses do %>
-        <p><span class="text-yellow-500"><%= guesser %>'s</span> guess</p>
+      <%= for %{guesser: guesser, tags: tags, picked_by: picked_by, score: score} <- hd(@state.games).guesses do %>
+        <p>
+          <span class="text-yellow-500"><%= guesser %>'s</span>
+          guess +<%= score + 5 * length(picked_by) %>
+        </p>
+
         <.button phx-click="pick" phx-target={@myself} style="width: 200px; text-align: left" disabled>
-          <%= for {tag, correct?} <- tags do %>
-            <span class={class_color(correct?)}><%= tag %></span> <br />
+          <%= for {tag, correct?, tag_score} <- tags do %>
+            <span class={class_color(correct?)}><%= tag %></span> +<%= tag_score %><br />
           <% end %>
         </.button>
         <p>
           Picked by: <br />
           <%= if picked_by != [] do %>
             <span class="text-yellow-500"><%= Enum.join(picked_by, ", ") %></span>
+            (+<%= div(score, 2) %>)
           <% else %>
             nobody!
           <% end %>
+          +<%= 5 * length(picked_by) %>
         </p>
         <hr />
       <% end %>
@@ -41,6 +47,8 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
     """
   end
 
-  def class_color(true), do: "text-green-500"
-  def class_color(false), do: "text-red-500"
+  # ALL THESE NUMBERS ARE TEMPORARY
+
+  defp class_color(true), do: "text-green-500"
+  defp class_color(false), do: "text-red-500"
 end

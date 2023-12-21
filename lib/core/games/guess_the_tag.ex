@@ -51,16 +51,24 @@ defmodule Core.Games.GuessTheTag do
         |> Enum.map(&String.downcase/1)
         |> Enum.uniq()
         |> Enum.map(fn tag -> {tag, tag in game_tags} end)
+        |> Enum.map(&add_tag_score(&1, all_guessed_tags))
 
       guess_score =
         tag_tuples
-        |> Enum.filter(fn {_, correct?} -> correct? end)
-        |> Enum.map(fn {tag, true} -> Enum.count(all_guessed_tags, &(&1 == tag)) end)
-        |> Enum.map(&(6 - &1))
-        |> Enum.reject(&(&1 < 0))
+        |> Enum.map(&elem(&1, 2))
         |> Enum.sum()
 
       %{guess | score: guess_score, tags: tag_tuples}
+    end
+  end
+
+  def add_tag_score({tag, correct?}, all_guessed_tags) do
+    with true <- correct?,
+         tag_score <- 6 - Enum.count(all_guessed_tags, &(&1 == tag)),
+         true <- tag_score >= 0 do
+      {tag, true, tag_score}
+    else
+      _ -> {tag, correct?, 0}
     end
   end
 
@@ -74,7 +82,7 @@ defmodule Core.Games.GuessTheTag do
   end
 
   defp insert_esix_guess(%{tags: game_tags, guesses: guesses} = game) do
-    esix_tags = game_tags |> Enum.take_random(5) |> Enum.map(&{&1, true})
+    esix_tags = game_tags |> Enum.take_random(5) |> Enum.map(&{&1, true, 5})
 
     %{
       game
