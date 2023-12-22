@@ -7,7 +7,9 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <a href={hd(@state.games).source} target="_blank">Source</a>
+      <a href={hd(@state.games).source} class="text-[#b4c7d9] hover:text-white" target="_blank">
+        Image Source
+      </a>
       <hr />
 
       <p>Scores:</p>
