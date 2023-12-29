@@ -2,6 +2,8 @@ defmodule Core.Room do
   @moduledoc false
   use GenServer, restart: :temporary
 
+  alias Core.Games
+
   @enforce_keys [:name]
   defstruct [
     :name,
@@ -56,6 +58,26 @@ defmodule Core.Room do
 
   def handle_call(:get_state, _from, state) do
     {:reply, state, state, @fifteen_minutes}
+  end
+
+  def handle_call(
+        {:game_setup, %{"blacklist" => blacklist} = params},
+        _from,
+        %{name: name} = state
+      ) do
+    {[game | _] = games, post_urls} = Games.setup(params)
+
+    changes = %{
+      games: games,
+      post_urls: post_urls,
+      status: game.type,
+      blacklist: blacklist
+    }
+
+    new_state = Map.merge(state, changes)
+
+    broadcast({:new_state, new_state}, name)
+    {:reply, new_state, new_state, @fifteen_minutes}
   end
 
   def handle_call({:update_state, changes}, _from, %{name: name} = state) do

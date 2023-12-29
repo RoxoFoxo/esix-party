@@ -139,7 +139,9 @@ defmodule CoreWeb.RoomLive do
 
   def terminate(_reason, _socket), do: :ok
 
-  defp add_default_blacklist(blacklist), do: blacklist <> "gore scat watersports young loli shota"
+  defp add_default_blacklist(blacklist) do
+    "Blacklisted tags: #{blacklist} gore scat watersports young loli shota"
+  end
 
   defp get_server_pid(name), do: GenServer.whereis({:via, Registry, {RoomRegistry, name}})
 
