@@ -21,7 +21,9 @@ defmodule Core.Application do
       # Room Dynamic Supervisor
       {DynamicSupervisor, strategy: :one_for_one, name: Core.RoomSupervisor},
       # Starts registry
-      Core.RoomRegistry
+      Core.RoomRegistry,
+      # Start Image Pool
+      Core.PostPool
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -3,9 +3,6 @@ defmodule CoreWeb.LobbyComponent do
 
   import CoreWeb.RoomUtils
 
-  alias Core.E621Client
-  alias Core.GameSetup
-
   @impl true
   def render(assigns) do
     ~H"""
@@ -15,8 +12,7 @@ defmodule CoreWeb.LobbyComponent do
       <p>Players:</p>
       <div class="text-yellow-500">
         <%= for player <- Enum.reverse(@state.players) do %>
-            <%= player.name %>
-          <br />
+          <%= player.name %> <br />
         <% end %>
       </div>
 
@@ -62,55 +58,12 @@ defmodule CoreWeb.LobbyComponent do
   end
 
   @impl true
-  def handle_event(
-        "start",
-        %{
-          "amount_of_rounds" => amount_of_rounds,
-          "blacklist" => blacklist
-        } = params,
-        %{assigns: %{server_pid: server_pid}} = socket
-      ) do
+  def handle_event("start", params, %{assigns: %{server_pid: server_pid}} = socket) do
     if Process.alive?(server_pid) do
-      formatted_blacklist =
-        blacklist
-        |> String.split(" ", trim: true)
-        |> Enum.map(&("-" <> &1))
-
-      ratings =
-        params
-        |> Map.take(["safe?", "questionable?", "explicit?"])
-        |> Enum.map(&check_rating/1)
-        |> Enum.reject(&(&1 == ""))
-
-      tags =
-        (formatted_blacklist ++ ratings)
-        |> Enum.join("+")
-
-      {[game | _] = games, post_urls} =
-        amount_of_rounds
-        |> E621Client.get_random_posts(tags)
-        |> GameSetup.generate_into_games()
-
-      changes = %{
-        games: games,
-        post_urls: post_urls,
-        status: game.type,
-        blacklist: blacklist
-      }
-
-      {:noreply, update_state(socket, changes)}
+      GenServer.call(server_pid, {:game_setup, params}, 15000)
+      {:noreply, socket}
     else
-      {:noreply, update_state(socket)}
-    end
-  end
-
-  def check_rating({_rating, "false"}), do: ""
-
-  def check_rating({rating, "true"}) do
-    case rating do
-      "safe?" -> "~rating:s"
-      "questionable?" -> "~rating:q"
-      "explicit?" -> "~rating:e"
+      {:noreply, redirect_to_home(socket)}
     end
   end
 end

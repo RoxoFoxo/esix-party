@@ -84,7 +84,6 @@ defmodule CoreWeb.RoomLive do
   @impl true
   def handle_info({:new_state, new_state}, socket) do
     {:noreply, assign(socket, :state, new_state)}
-    |> IO.inspect()
   end
 
   def handle_info(:redirect_home, socket) do
@@ -139,7 +138,9 @@ defmodule CoreWeb.RoomLive do
 
   def terminate(_reason, _socket), do: :ok
 
-  defp add_default_blacklist(blacklist), do: blacklist <> "gore scat watersports young loli shota"
+  defp add_default_blacklist(blacklist) do
+    "Blacklisted tags: #{blacklist} gore scat watersports young loli shota"
+  end
 
   defp get_server_pid(name), do: GenServer.whereis({:via, Registry, {RoomRegistry, name}})
 
