@@ -11,6 +11,7 @@ defmodule Core.PostPool do
 
   @impl true
   def init(state) do
+    Process.send_after(self(), :drop_posts, 180_000)
     {:ok, state}
   end
 
@@ -36,17 +37,17 @@ defmodule Core.PostPool do
     end
   end
 
+  @impl true
+  def handle_info(:drop_posts, state) do
+    Process.send_after(self(), :drop_posts, 180_000)
+    {:noreply, Enum.drop(state, 5)}
+  end
+
   defp valid_post?(
          %{tags: tags, rating: post_rating},
          %{"blacklist" => blacklist_input} = params
        ) do
     post_tags = flatten_tags(tags)
-
-    valid_tags? =
-      blacklist_input
-      |> String.split([" ", ","], trim: true)
-      |> Enum.map(&(&1 not in post_tags))
-      |> Enum.all?()
 
     valid_rating? =
       params
@@ -54,7 +55,14 @@ defmodule Core.PostPool do
       |> Enum.map(&check_rating(&1, :atom))
       |> Enum.member?(post_rating)
 
-    valid_rating? && valid_tags?
+    if valid_rating? do
+      blacklist_input
+      |> String.split([" ", ","], trim: true)
+      |> Enum.map(&(&1 not in post_tags))
+      |> Enum.all?()
+    else
+      false
+    end
   end
 
   defp format_tags(%{"blacklist" => blacklist_input} = params) do
