@@ -24,7 +24,7 @@ defmodule Core.Games.GuessTheTag do
   def guess_changes([%{guesses: guesses, tags: game_tags} = game | tail], players, timer_ref) do
     Process.cancel_timer(timer_ref)
 
-    updated_guesses = add_score_to_guesses(guesses, game_tags)
+    updated_guesses = guesses |> Enum.uniq_by(& &1.guesser) |> add_score_to_guesses(game_tags)
 
     updated_game =
       game
