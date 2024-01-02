@@ -50,6 +50,7 @@ defmodule CoreWeb.RoomLive do
       {:ok,
        socket
        |> assign(%{
+         page_title: room_name,
          server_pid: server_pid,
          state: GenServer.call(server_pid, :get_state),
          current_player: nil,
