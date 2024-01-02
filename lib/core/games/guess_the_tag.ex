@@ -42,16 +42,15 @@ defmodule Core.Games.GuessTheTag do
   defp add_score_to_guesses(guesses, game_tags) do
     all_guessed_tags =
       guesses
-      |> Enum.map(fn %{tags: tags} -> tags end)
+      |> Enum.map(&Enum.uniq(&1.tags))
       |> List.flatten()
 
-    for %{tags: tags} = guess <- guesses do
+    for %{tags: guess_tags} = guess <- guesses do
       tag_tuples =
-        tags
+        guess_tags
         |> Enum.map(&String.downcase/1)
-        |> Enum.uniq()
         |> Enum.map(fn tag -> {tag, tag in game_tags} end)
-        |> Enum.map(&add_tag_score(&1, all_guessed_tags))
+        |> Enum.reduce([], &add_tag_score(&1, &2, all_guessed_tags))
 
       guess_score =
         tag_tuples
@@ -62,14 +61,16 @@ defmodule Core.Games.GuessTheTag do
     end
   end
 
-  def add_tag_score({tag, correct?}, all_guessed_tags) do
+  def add_tag_score({tag, correct?}, acc_tags, all_guessed_tags) do
     with true <- correct?,
+         false <- tag in Enum.map(acc_tags, fn {tag, _, _} -> tag end),
          tag_score <- 6 - Enum.count(all_guessed_tags, &(&1 == tag)),
          true <- tag_score >= 0 do
       {tag, true, tag_score}
     else
       _ -> {tag, correct?, 0}
     end
+    |> then(&[&1 | acc_tags])
   end
 
   defp award_guessers_for_guessing(players, guesses) do
