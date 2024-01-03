@@ -88,7 +88,7 @@ defmodule CoreWeb.RoomLive do
   end
 
   def handle_info(:redirect_home, socket) do
-    {:noreply, redirect_to_home(socket)}
+    {:noreply, socket |> assign(:state, %{}) |> redirect_to_home()}
   end
 
   def handle_info({:name_submit, assigns}, socket) do

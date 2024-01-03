@@ -4,13 +4,8 @@ defmodule CoreWeb.RoomUtils do
   alias Phoenix.LiveView
 
   def update_state(%{assigns: %{server_pid: server_pid}} = socket, changes \\ %{}) do
-    if Process.alive?(server_pid) do
-      GenServer.call(server_pid, {:update_state, changes})
-
-      socket
-    else
-      redirect_to_home(socket)
-    end
+    GenServer.call(server_pid, {:update_state, changes})
+    socket
   end
 
   def redirect_to_home(socket, {kind, msg} \\ {:error, @inactive_msg}) do

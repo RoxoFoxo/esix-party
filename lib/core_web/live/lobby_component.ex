@@ -67,11 +67,7 @@ defmodule CoreWeb.LobbyComponent do
 
   @impl true
   def handle_event("start", params, %{assigns: %{server_pid: server_pid}} = socket) do
-    if Process.alive?(server_pid) do
-      GenServer.call(server_pid, {:game_setup, params}, 15000)
-      {:noreply, socket}
-    else
-      {:noreply, redirect_to_home(socket)}
-    end
+    GenServer.call(server_pid, {:game_setup, params}, 15000)
+    {:noreply, socket}
   end
 end
