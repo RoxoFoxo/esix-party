@@ -15,7 +15,9 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
       <p>Scores:</p>
       <%= for %{name: name, score: score} <- @state.players do %>
         <p>
-          <span class="text-yellow-500"><%= name %></span> <%= to_string(score) %>
+          <span class="text-yellow-500"><%= name %></span> <%= to_string(score) %> <%= score_secret(
+            score
+          ) %>
         </p>
       <% end %>
       <hr />

@@ -67,4 +67,7 @@ defmodule CoreWeb.RoomUtils do
       index -> rem(index, 3) == 0
     end
   end
+
+  def score_secret(69), do: "nice"
+  def score_secret(_), do: ""
 end

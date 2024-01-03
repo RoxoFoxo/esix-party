@@ -34,9 +34,17 @@ defmodule CoreWeb.LobbyComponent do
             label="Blacklisted tags"
           />
 
-          <.input field={@form[:safe?]} type="checkbox" label="Allow safe?" checked />
-          <.input field={@form[:questionable?]} type="checkbox" label="Allow questionable?" />
-          <.input field={@form[:explicit?]} type="checkbox" label="Allow explicit?" />
+          <table class="table-fixed w-full select-none">
+            <td>
+              <.input field={@form[:safe?]} type="checkbox" label="Allow safe?" checked />
+            </td>
+            <td>
+              <.input field={@form[:questionable?]} type="checkbox" label="Allow questionable?" />
+            </td>
+            <td>
+              <.input field={@form[:explicit?]} type="checkbox" label="Allow explicit?" />
+            </td>
+          </table>
 
           <:actions>
             <.button phx-target={@myself} phx-disable-with="Starting...">
