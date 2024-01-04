@@ -7,17 +7,16 @@ defmodule CoreWeb.FinalResultsComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <%= for post <- @state.post_urls do %>
-        <a href={post.source} target="_blank">
-          <img src={"data:image/webp;base64," <> post.image} />
-        </a>
-        <br />
-      <% end %>
-
-      <p>Results!</p>
-      <%= for player <- order_by_score(@state.players) do %>
-        <p><span class="text-yellow-500"><%= player.name %></span> <%= to_string(player.score) %></p>
-      <% end %>
+      <div class="flex flex-col items-center">
+        <%= for post <- @state.post_urls do %>
+          <div>
+            <a href={post.source} target="_blank">
+              <img src={"data:image/webp;base64," <> post.image} />
+            </a>
+            <br />
+          </div>
+        <% end %>
+      </div>
 
       <.button
         phx-click="new_match"
@@ -44,7 +43,4 @@ defmodule CoreWeb.FinalResultsComponent do
 
     {:noreply, update_state(socket, changes)}
   end
-
-  defp order_by_score(players),
-    do: Enum.sort(players, fn %{score: score}, other -> score >= other end)
 end

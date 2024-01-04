@@ -7,20 +7,12 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <a href={hd(@state.games).source} class="text-[#b4c7d9] hover:text-white" target="_blank">
-        Image Source
-      </a>
-      <hr />
-
-      <p>Scores:</p>
-      <%= for %{name: name, score: score} <- @state.players do %>
-        <p>
-          <span class="text-yellow-500"><%= name %></span> <%= to_string(score) %> <%= score_secret(
-            score
-          ) %>
-        </p>
-      <% end %>
-      <hr />
+      <div class="text-center">
+        <a href={hd(@state.games).source} class="text-[#b4c7d9] hover:text-white" target="_blank">
+          Image Source
+        </a>
+      </div>
+      <br />
 
       <table>
         <%= for %{guesser: guesser, tags: tags, picked_by: picked_by, score: score} <- hd(@state.games).guesses do %>

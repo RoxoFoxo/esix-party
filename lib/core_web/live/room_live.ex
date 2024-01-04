@@ -14,19 +14,37 @@ defmodule CoreWeb.RoomLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <%= if @state.status != :lobby do %>
-      <p title={add_default_blacklist(@state.blacklist)}>Hover to see blacklist</p>
-    <% end %>
-
     <%= if @state do %>
-      <.live_component
-        module={fetch_component(@state.status)}
-        id="room_component"
-        state={@state}
-        server_pid={@server_pid}
-        current_player={@current_player}
-        time_remaining={@time_remaining}
-      />
+      <div class="grid gap-4 grid-cols-5">
+        <div class="bg-blue-900/50 rounded-xl p-5 mb-auto sticky top-10">
+          <.live_component
+            module={CoreWeb.ScoreboardComponent}
+            id="scoreboard_component"
+            players={@state.players}
+            status={@state.status}
+          />
+        </div>
+
+        <div class="max-w-3xl col-span-3 mx-auto mb-auto bg-blue-900/50 rounded-xl p-5">
+          <%= if @state.status != :lobby do %>
+            <p
+              title={add_default_blacklist(@state.blacklist)}
+              class="text-[#b4c7d9] hover:text-white select-none"
+            >
+              Hover to see blacklist
+            </p>
+          <% end %>
+
+          <.live_component
+            module={fetch_component(@state.status)}
+            id="room_component"
+            state={@state}
+            server_pid={@server_pid}
+            current_player={@current_player}
+            time_remaining={@time_remaining}
+          />
+        </div>
+      </div>
     <% end %>
 
     <%= if @current_player == nil do %>
@@ -139,8 +157,15 @@ defmodule CoreWeb.RoomLive do
 
   def terminate(_reason, _socket), do: :ok
 
+  @blacklist_hover_first "Blacklisted tags: "
+  @blacklist_hover_tags "animated gore scat watersports young loli shota"
+
+  defp add_default_blacklist("") do
+    @blacklist_hover_first <> @blacklist_hover_tags
+  end
+
   defp add_default_blacklist(blacklist) do
-    "Blacklisted tags: #{blacklist} gore scat watersports young loli shota"
+    @blacklist_hover_first <> blacklist <> " " <> @blacklist_hover_tags
   end
 
   defp get_server_pid(name), do: GenServer.whereis({:via, Registry, {RoomRegistry, name}})
