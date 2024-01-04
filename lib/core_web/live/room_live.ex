@@ -16,7 +16,7 @@ defmodule CoreWeb.RoomLive do
     ~H"""
     <%= if @state do %>
       <div class="grid gap-4 grid-cols-5">
-        <div class="bg-blue-900/50 rounded-xl p-5 mb-auto sticky top-10">
+        <div class="bg-blue-900/50 rounded-xl p-5 mb-auto sticky top-10 border-2 border-blue-950">
           <.live_component
             module={CoreWeb.ScoreboardComponent}
             id="scoreboard_component"
@@ -25,7 +25,7 @@ defmodule CoreWeb.RoomLive do
           />
         </div>
 
-        <div class="max-w-3xl col-span-3 mx-auto mb-auto bg-blue-900/50 rounded-xl p-5">
+        <div class="max-w-3xl col-span-3 mx-auto mb-auto bg-blue-900/50 rounded-xl p-5 border-2 border-blue-950">
           <%= if @state.status != :lobby do %>
             <p
               title={add_default_blacklist(@state.blacklist)}

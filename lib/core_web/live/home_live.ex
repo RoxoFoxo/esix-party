@@ -6,7 +6,7 @@ defmodule CoreWeb.HomeLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-2xl grid gap-4 mx-auto bg-blue-900/50 rounded-xl p-5">
+    <div class="max-w-2xl grid gap-4 mx-auto bg-blue-900/50 rounded-xl p-5 border-2 border-blue-950">
       <div>
         <.simple_form for={@form} id="join-room" phx-submit="join_room">
           <.input field={@form[:room_name]} type="text" label="Room Name" autocomplete="off" />
