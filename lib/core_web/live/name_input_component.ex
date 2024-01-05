@@ -8,6 +8,7 @@ defmodule CoreWeb.NameInputComponent do
   @in_use_msg "Name is already in use!"
   @esix_msg "Hey, that's my name! Come up with something different!"
   @empty_msg "Yeah that's the input box, write a name on it!"
+  @crown_msg "Sorry, but only the room owner can be royalty!"
 
   @impl true
   def render(assigns) do
@@ -26,7 +27,7 @@ defmodule CoreWeb.NameInputComponent do
             type="text"
             autocomplete="off"
             maxlength="12"
-              label="Enter a username:"
+            label="Enter a username:"
           />
           <:actions>
             <.button>Submit</.button>
@@ -59,9 +60,10 @@ defmodule CoreWeb.NameInputComponent do
         %{"name" => player_name},
         %{assigns: %{state: %{players: players}}} = socket
       ) do
-    with false <- name_in_use?(player_name, players) && :in_use,
+    with false <- player_name == "" && :empty,
          false <- player_name =~ ~r'^eSix$'i && :esix,
-         false <- player_name == "" && :empty do
+         false <- String.contains?(player_name, "👑") && :crown,
+         false <- name_in_use?(player_name, players) && :in_use do
       send(self(), {:name_submit, %{current_player: player_name}})
 
       owner? = players == []
@@ -69,14 +71,17 @@ defmodule CoreWeb.NameInputComponent do
 
       {:noreply, update_state(socket, %{players: new_players})}
     else
-      :in_use ->
-        {:noreply, assign(socket, fail_msg: @in_use_msg)}
+      :empty ->
+        {:noreply, assign(socket, fail_msg: @empty_msg)}
 
       :esix ->
         {:noreply, assign(socket, fail_msg: @esix_msg)}
 
-      :empty ->
-        {:noreply, assign(socket, fail_msg: @empty_msg)}
+      :crown ->
+        {:noreply, assign(socket, fail_msg: @crown_msg)}
+
+      :in_use ->
+        {:noreply, assign(socket, fail_msg: @in_use_msg)}
     end
   end
 

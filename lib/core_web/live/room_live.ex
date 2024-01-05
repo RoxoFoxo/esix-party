@@ -16,7 +16,7 @@ defmodule CoreWeb.RoomLive do
     ~H"""
     <%= if @state do %>
       <div class="grid gap-4 grid-cols-5">
-        <div class="bg-blue-950 rounded-xl p-5 mb-auto sticky top-10 border-2 border-indigo-950">
+        <div class="bg-blue-950 rounded-xl p-5 mb-auto sticky top-10 border-2 border-indigo-950 w-48 justify-self-end">
           <.live_component
             module={CoreWeb.ScoreboardComponent}
             id="scoreboard_component"
