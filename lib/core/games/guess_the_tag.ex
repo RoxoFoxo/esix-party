@@ -61,7 +61,7 @@ defmodule Core.Games.GuessTheTag do
     end
   end
 
-  def add_tag_score({tag, correct?}, acc_tags, all_guessed_tags) do
+  defp add_tag_score({tag, correct?}, acc_tags, all_guessed_tags) do
     with true <- correct?,
          false <- tag in Enum.map(acc_tags, fn {tag, _, _} -> tag end),
          tag_score <- 6 - Enum.count(all_guessed_tags, &(&1 == tag)),
@@ -134,4 +134,7 @@ defmodule Core.Games.GuessTheTag do
       end
     end
   end
+
+  def pick_timer(guesses) when length(guesses) > 9, do: 91000
+  def pick_timer(guesses), do: length(guesses) * 10000 + 1000
 end

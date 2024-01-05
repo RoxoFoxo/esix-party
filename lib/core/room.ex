@@ -90,11 +90,11 @@ defmodule Core.Room do
   @impl true
   def handle_cast(
         :start_timer,
-        %{status: status, game_status: game_status, name: name} = state
+        %{status: status, game_status: game_status, name: name, games: [game | _]} = state
       ) do
     time =
       case {status, game_status} do
-        {:guess_the_tag, :pick} -> 31000
+        {:guess_the_tag, :pick} -> GuessTheTag.pick_timer(game.guesses)
         {:guess_the_tag, _} -> 61000
       end
 
