@@ -53,6 +53,8 @@ defmodule Core.PostPool do
       params
       |> Map.take(["safe?", "questionable?", "explicit?"])
       |> Enum.map(&check_rating(&1, :atom))
+      |> Enum.reject(&(&1 == false))
+      |> check_for_no_rating(:atom)
       |> Enum.member?(post_rating)
 
     if valid_rating? do
@@ -76,6 +78,7 @@ defmodule Core.PostPool do
       |> Map.take(["safe?", "questionable?", "explicit?"])
       |> Enum.map(&check_rating(&1, :tag))
       |> Enum.reject(&(&1 == false))
+      |> check_for_no_rating(:tag)
 
     Enum.join(formatted_blacklist ++ ratings, "+")
   end
@@ -89,4 +92,8 @@ defmodule Core.PostPool do
   defp check_rating({"safe?", "true"}, :tag), do: "~rating:s"
   defp check_rating({"questionable?", "true"}, :tag), do: "~rating:q"
   defp check_rating({"explicit?", "true"}, :tag), do: "~rating:e"
+
+  defp check_for_no_rating([], :atom), do: ~w[safe questionable explicit]a
+  defp check_for_no_rating([], :tag), do: ["~rating:s", "~rating:q", "~rating:e"]
+  defp check_for_no_rating(list, _), do: list
 end
