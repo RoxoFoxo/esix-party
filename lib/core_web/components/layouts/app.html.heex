@@ -1,24 +1,19 @@
-<header class="px-4 sm:px-6 lg:px-8">
-  <div class="flex items-center justify-between border-b border-zinc-100 py-3 text-sm">
-    <div class="flex items-center gap-4">
-      <a href="/">
-        <img src={~p"/images/logo.svg"} width="36" />
-      </a>
-      <p class="bg-brand/5 text-brand rounded-full px-2 font-medium leading-6">
-        v<%= Application.spec(:phoenix, :vsn) %>
-      </p>
+<header class="px-4 sm:px-6 lg:px-8 bg-blue-950 border-b border-indigo-950 border-b-2">
+  <div class="flex items-center justify-between py-3 text-sm">
+    <div class="flex items-center gap-4 text-yellow-500 font-black">
+      eSix Party!
     </div>
-    <div class="flex items-center gap-4 font-semibold leading-6 text-white">
-      <a href="https://twitter.com/roxothefoxo" class="hover:text-yellow-500">
+    <div class="flex items-center gap-4 font-semibold leading-6 text-[#b4c7d9]">
+      <a href="https://twitter.com/roxothefoxo" class="hover:text-white" target="_blank">
         @RoxoTheFoxo
       </a>
-      <a href="https://github.com/RoxoFoxo/esix-party" class="hover:text-yellow-500">
+      <a href="https://github.com/RoxoFoxo/esix-party" class="hover:text-white" target="_blank">
         GitHub
       </a>
     </div>
   </div>
 </header>
-<main class="flex-initial px-4 py-20 sm:px-6 lg:px-8">
+<main class="flex-initial px-4 py-10 sm:px-6 lg:px-8">
   <div class="mx-auto text-white">
     <.flash_group flash={@flash} />
     <%= @inner_content %>

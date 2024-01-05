@@ -13,12 +13,9 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
     <div>
       <p>Pick the guess that sounds the most legit!</p>
       <br />
-      <table>
+      <div class="flex flex-wrap gap-4">
         <%= for %{guesser: guesser, tags: tags} <- hd(@state.games).guesses do %>
-          <%= if add_table_row?(hd(@state.games).guesses, guesser) do %>
-            <tr />
-          <% end %>
-          <td>
+          <div>
             <.button
               phx-click="pick"
               phx-target={@myself}
@@ -31,9 +28,9 @@ defmodule CoreWeb.Games.GuessTheTag.PickComponent do
                 <%= tag %> <br />
               <% end %>
             </.button>
-          </td>
+          </div>
         <% end %>
-      </table>
+      </div>
     </div>
     """
   end

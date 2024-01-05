@@ -14,12 +14,9 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
       </div>
       <br />
 
-      <table>
+      <div class="flex flex-wrap gap-4">
         <%= for %{guesser: guesser, tags: tags, picked_by: picked_by, score: score} <- hd(@state.games).guesses do %>
-          <%= if add_table_row?(hd(@state.games).guesses, guesser) do %>
-            <tr />
-          <% end %>
-          <td valign="top">
+          <div>
             <p><span class="text-yellow-500"><%= guesser %>'s</span> guess</p>
             <p>+<%= score %> for tags!</p>
             <p>+<%= 5 * length(picked_by) %> for deception!</p>
@@ -43,9 +40,10 @@ defmodule CoreWeb.Games.GuessTheTag.ResultsComponent do
                 nobody!
               <% end %>
             </p>
-          </td>
+          </div>
         <% end %>
-      </table>
+      </div>
+      <br />
 
       <.button phx-click="next_game" {hide_if_not_owner(@current_player, @state.players)}>
         Continue

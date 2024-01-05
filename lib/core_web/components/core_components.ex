@@ -68,7 +68,7 @@ defmodule CoreWeb.CoreComponents do
             <.focus_wrap
               id={"#{@id}-container"}
               phx-key="escape"
-              class="bg-blue-900/50 shadow-black ring-black relative hidden rounded-2xl p-14 shadow-lg ring-1 transition"
+              class="bg-blue-950 shadow-black ring-black relative hidden rounded-2xl p-14 shadow-lg ring-1 transition"
             >
               <div id={"#{@id}-content"}>
                 <%= render_slot(@inner_block) %>

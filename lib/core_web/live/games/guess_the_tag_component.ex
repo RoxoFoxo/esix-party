@@ -21,7 +21,7 @@ defmodule CoreWeb.Games.GuessTheTagComponent do
         <p class="text-center">Time remaining: <%= @time_remaining %></p>
       <% else %>
         <a href={hd(@state.games).source} target="_blank">
-          <img src={"data:image/webp;base64," <> hd(@state.games).image} />
+          <img src={"data:image/webp;base64," <> hd(@state.games).image} class="mx-auto" />
         </a>
       <% end %>
 
