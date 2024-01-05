@@ -22,6 +22,8 @@ defmodule CoreWeb.RoomLive do
             id="scoreboard_component"
             players={@state.players}
             status={@state.status}
+            game_status={@state.game_status}
+            games={@state.games}
           />
         </div>
 
