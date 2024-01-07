@@ -19,7 +19,7 @@ defmodule CoreWeb.ScoreboardComponent do
               <%= if owner?, do: " 👑" %>
             </div>
             <div>
-              <%= if @status != :lobby, do: score %>
+              <%= if @status != :lobby, do: score_secret(score) %>
             </div>
           </div>
         <% end %>
@@ -50,4 +50,7 @@ defmodule CoreWeb.ScoreboardComponent do
   end
 
   defp name_color(_, _, _, _), do: @text_yellow
+
+  def score_secret(69), do: "nice 69"
+  def score_secret(score), do: score
 end
